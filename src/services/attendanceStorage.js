@@ -4,47 +4,23 @@ import { appendRecordToSheet } from './googleSheetsService';
 
 const STORAGE_KEY = 'nini_streammod_attendance_records_v1';
 
-const INITIAL_SEED_RECORDS = [
-  {
-    id: 'att-1001',
-    tikTokName: 'GamerGirl_Nini',
-    twitchName: 'NiniStreams',
-    date: 'August 6, 2026',
-    time: '6:30 PM',
-    status: 'Present',
-    reason: '',
-    submissionTimestamp: '2026-08-06T18:30:00.000Z'
-  },
-  {
-    id: 'att-1002',
-    tikTokName: 'Mod_Alex88',
-    twitchName: 'Alex_The_Mod',
-    date: 'August 6, 2026',
-    time: '7:15 PM',
-    status: 'Present',
-    reason: '',
-    submissionTimestamp: '2026-08-06T19:15:00.000Z'
-  },
-  {
-    id: 'att-1003',
-    tikTokName: 'Shadow_Mod',
-    twitchName: 'ShadowTwitch',
-    date: 'August 6, 2026',
-    time: '7:45 PM',
-    status: 'Absent',
-    reason: 'Family emergency, will join VOD review later',
-    submissionTimestamp: '2026-08-06T19:45:00.000Z'
-  }
-];
+const INITIAL_SEED_RECORDS = [];
 
 export const getAttendanceRecords = () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_SEED_RECORDS));
-      return INITIAL_SEED_RECORDS;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      return [];
     }
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    const list = Array.isArray(parsed) ? parsed : [];
+    // Automatically purge old demo seed records (att-1001, att-1002, att-1003)
+    const cleanList = list.filter(r => r && !['att-1001', 'att-1002', 'att-1003'].includes(r.id));
+    if (cleanList.length !== list.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanList));
+    }
+    return cleanList;
   } catch (err) {
     console.error('Error loading attendance records:', err);
     return [];

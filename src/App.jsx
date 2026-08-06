@@ -16,18 +16,13 @@ export default function App() {
     const safeLoaded = Array.isArray(loaded) ? loaded : [];
     setRecords(safeLoaded);
 
-    // Auto-sync pull from Google Sheet on app startup if connected
+    // Auto-sync pull from Google Sheet on app startup (Google Sheet is Master source)
     const config = getSyncConfig();
     if (config.webAppUrl && config.isConnected) {
       pullRecordsFromSheet().then(sheetRecords => {
-        if (Array.isArray(sheetRecords) && sheetRecords.length > 0) {
-          const existingIds = new Set(safeLoaded.map(r => r.id));
-          const newFromSheet = sheetRecords.filter(r => !existingIds.has(r.id));
-          if (newFromSheet.length > 0) {
-            const merged = [...newFromSheet, ...safeLoaded];
-            localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(merged));
-            setRecords(merged);
-          }
+        if (Array.isArray(sheetRecords)) {
+          localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(sheetRecords));
+          setRecords(sheetRecords);
         }
       }).catch(err => {
         console.warn('Startup background Google Sheet sync failed:', err);
