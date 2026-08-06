@@ -25,6 +25,7 @@ export default function AdminDashboard({
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
   const [importMessage, setImportMessage] = useState({ type: '', text: '' });
   const [localIsSheetsModalOpen, setLocalIsSheetsModalOpen] = useState(false);
+  const fileInputRef = useRef(null);
 
   const isSheetsModalOpen = externalIsSheetsModalOpen !== undefined ? externalIsSheetsModalOpen : localIsSheetsModalOpen;
   const setIsSheetsModalOpen = externalSetIsSheetsModalOpen || setLocalIsSheetsModalOpen;
