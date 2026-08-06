@@ -43,6 +43,19 @@ export default function AdminDashboard({
   // Selected specific date - default to 'ALL' so user sees all records immediately
   const [selectedDate, setSelectedDate] = useState('ALL');
 
+  // Auto-focus calendar view to month of latest attendance entry
+  useEffect(() => {
+    if (records && records.length > 0) {
+      const latestDateStr = records[0].date;
+      if (latestDateStr) {
+        const parsed = new Date(latestDateStr);
+        if (!isNaN(parsed.getTime())) {
+          setCurrentDate(parsed);
+        }
+      }
+    }
+  }, [records]);
+
   // Calendar Navigation
   const prevMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));

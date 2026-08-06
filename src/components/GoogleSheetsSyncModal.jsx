@@ -166,6 +166,33 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
     }
   };
 
+  const handleStrictReplaceFromSheet = async () => {
+    if (!window.confirm('Strict Mode: Replace local attendance database strictly with whatever is in the Google Sheet?')) {
+      return;
+    }
+    setIsSyncing(true);
+    setStatusMessage({ type: 'info', text: 'Fetching Google Sheet rows to strictly replace local database...' });
+
+    try {
+      const sheetRecords = await pullRecordsFromSheet();
+      setLogs(getSyncLogs());
+
+      // Replace local storage with strictly sheet records
+      localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(sheetRecords));
+      if (onRecordsUpdated) onRecordsUpdated(sheetRecords);
+      setConfig(getSyncConfig());
+
+      setStatusMessage({ 
+        type: 'success', 
+        text: `Database Mirror Complete! Local database strictly matches Google Sheet (${sheetRecords.length} records).` 
+      });
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: `Strict replacement failed: ${err.message}` });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content sheets-modal" onClick={e => e.stopPropagation()}>
@@ -373,18 +400,18 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
               </div>
 
               {/* 2-Way Sync Card */}
-              <div className="card-box action-card" style={{ gridColumn: '1 / -1' }}>
+              <div className="card-box action-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                   <div className="action-icon twoway-icon">
                     <RefreshCw size={24} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '1rem' }}>Full Two-Way Synchronization</h3>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Bidirectional Consolidation</span>
+                    <h3 style={{ margin: 0, fontSize: '1rem' }}>Full 2-Way Sync</h3>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Consolidate Both</span>
                   </div>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                  Synchronize and merge records between Google Sheet and Local Database so both datasets contain complete, identical records.
+                  Merge records between Google Sheet and local database so both datasets match.
                 </p>
                 <button 
                   className="btn" 
@@ -399,7 +426,38 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
                   disabled={isSyncing || !config.webAppUrl}
                 >
                   {isSyncing ? <RefreshCw size={16} className="spin-icon" /> : <RefreshCw size={16} />}
-                  Perform Full 2-Way Sync
+                  Perform 2-Way Sync
+                </button>
+              </div>
+
+              {/* Strict Mirror Card */}
+              <div className="card-box action-card" style={{ gridColumn: '1 / -1', borderColor: 'rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.05)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div className="action-icon" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#F87171' }}>
+                    <Database size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1rem', color: '#F87171' }}>Strict Mode: Mirror Google Sheet</h3>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Google Sheet = Master Source of Truth</span>
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                  Wipe local cache and strictly replace records & calendar slots with whatever is in the Google Sheet (including day, month, user details, and status).
+                </p>
+                <button 
+                  className="btn" 
+                  style={{ 
+                    width: '100%', 
+                    justify: 'center', 
+                    background: 'linear-gradient(135deg, #EF4444, #DC2626)', 
+                    color: '#FFF',
+                    fontWeight: 700
+                  }}
+                  onClick={handleStrictReplaceFromSheet}
+                  disabled={isSyncing || !config.webAppUrl}
+                >
+                  {isSyncing ? <RefreshCw size={16} className="spin-icon" /> : <Database size={16} />}
+                  Strictly Mirror Google Sheet Data
                 </button>
               </div>
 

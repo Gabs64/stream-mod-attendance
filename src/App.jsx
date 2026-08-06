@@ -3,6 +3,7 @@ import Header from './components/Header';
 import AttendanceForm from './components/AttendanceForm';
 import AdminDashboard from './components/AdminDashboard';
 import { getAttendanceRecords, saveAttendanceRecord, deleteAttendanceRecord, clearAllRecords } from './services/attendanceStorage';
+import { getSyncConfig, pullRecordsFromSheet } from './services/googleSheetsService';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('form'); // 'form' | 'admin'
@@ -12,6 +13,24 @@ export default function App() {
   useEffect(() => {
     const loaded = getAttendanceRecords();
     setRecords(loaded);
+
+    // Auto-sync pull from Google Sheet on app startup if connected
+    const config = getSyncConfig();
+    if (config.webAppUrl && config.isConnected) {
+      pullRecordsFromSheet().then(sheetRecords => {
+        if (sheetRecords && sheetRecords.length > 0) {
+          const existingIds = new Set(loaded.map(r => r.id));
+          const newFromSheet = sheetRecords.filter(r => !existingIds.has(r.id));
+          if (newFromSheet.length > 0) {
+            const merged = [...newFromSheet, ...loaded];
+            localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(merged));
+            setRecords(merged);
+          }
+        }
+      }).catch(err => {
+        console.warn('Startup background Google Sheet sync failed:', err);
+      });
+    }
   }, []);
 
   const handleRecordSubmitted = (newRecordData) => {

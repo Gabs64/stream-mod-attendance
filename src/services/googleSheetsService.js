@@ -56,6 +56,22 @@ export const addSyncLog = (type, message, status = 'success') => {
   }
 };
 
+export const normalizeDateString = (rawDate) => {
+  if (!rawDate) return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const str = String(rawDate).trim();
+  
+  if (/^[A-Za-z]+\s+\d{1,2},\s+\d{4}$/.test(str)) {
+    return str;
+  }
+  
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  
+  return str;
+};
+
 export const getAppsScriptTemplate = () => {
   return `/**
  * Google Apps Script for Stream Mod Attendance Database Sync
@@ -84,20 +100,34 @@ function doGet(e) {
   
   var headers = data[0];
   var records = [];
+  var tz = Session.getScriptTimeZone() || "GMT";
   
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
     if (!row[0] && !row[1] && !row[2]) continue; // Skip empty rows
     
+    var rawDate = row[3];
+    var formattedDate = (rawDate instanceof Date) 
+      ? Utilities.formatDate(rawDate, tz, "MMMM d, yyyy") 
+      : String(rawDate || '');
+
+    var rawTime = row[4];
+    var formattedTime = (rawTime instanceof Date)
+      ? Utilities.formatDate(rawTime, tz, "h:mm a")
+      : String(rawTime || '');
+
+    var rawStatus = String(row[5] || '').trim();
+    var isAbsent = rawStatus.toLowerCase().indexOf('absent') !== -1;
+    
     records.push({
-      id: String(row[0] || ''),
-      tikTokName: String(row[1] || '').replace(/^@/, ''),
-      twitchName: String(row[2] || '').replace(/^@/, ''),
-      date: String(row[3] || ''),
-      time: String(row[4] || ''),
-      status: String(row[5] || ''),
-      reason: String(row[6] === 'N/A' ? '' : (row[6] || '')),
-      submissionTimestamp: String(row[7] || '')
+      id: String(row[0] || ('att-gs-' + i)),
+      tikTokName: String(row[1] || '').replace(/^@/, '').trim(),
+      twitchName: String(row[2] || '').replace(/^@/, '').trim(),
+      date: formattedDate,
+      time: formattedTime || '12:00 PM',
+      status: isAbsent ? 'Absent' : 'Present',
+      reason: isAbsent ? String(row[6] === 'N/A' ? '' : (row[6] || '')) : '',
+      submissionTimestamp: String(row[7] || new Date().toISOString())
     });
   }
   
@@ -299,10 +329,25 @@ export const pullRecordsFromSheet = async () => {
       throw new Error(data.message || 'Failed to pull records from Google Sheet');
     }
 
+    const rawList = data.records || [];
+    const normalizedList = rawList.map((r, idx) => {
+      const isAbsent = (r.status || '').toLowerCase().includes('absent');
+      return {
+        id: r.id || 'att-gs-' + Date.now() + '-' + idx,
+        tikTokName: (r.tikTokName || '').replace(/^@/, '').trim(),
+        twitchName: (r.twitchName || '').replace(/^@/, '').trim(),
+        date: normalizeDateString(r.date),
+        time: r.time || '12:00 PM',
+        status: isAbsent ? 'Absent' : 'Present',
+        reason: isAbsent ? (r.reason === 'N/A' ? '' : (r.reason || '')) : '',
+        submissionTimestamp: r.submissionTimestamp || new Date().toISOString()
+      };
+    });
+
     const now = new Date().toISOString();
     saveSyncConfig({ lastSyncedAt: now, isConnected: true });
-    addSyncLog('PULL_ALL', `Pulled ${data.records?.length || 0} records from Google Sheet`, 'success');
-    return data.records || [];
+    addSyncLog('PULL_ALL', `Pulled ${normalizedList.length} records from Google Sheet`, 'success');
+    return normalizedList;
   } catch (err) {
     addSyncLog('PULL_ALL', `Pull failed: ${err.message}`, 'error');
     throw err;
