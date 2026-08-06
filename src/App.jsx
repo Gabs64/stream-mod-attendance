@@ -7,6 +7,7 @@ import { getAttendanceRecords, saveAttendanceRecord, deleteAttendanceRecord, cle
 export default function App() {
   const [activeTab, setActiveTab] = useState('form'); // 'form' | 'admin'
   const [records, setRecords] = useState([]);
+  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
 
   useEffect(() => {
     const loaded = getAttendanceRecords();
@@ -28,13 +29,18 @@ export default function App() {
     setRecords(cleared);
   };
 
+  const handleOpenSheetsSync = () => {
+    setActiveTab('admin');
+    setIsSheetsModalOpen(true);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         recordCount={records.length}
-        onOpenSheetsSync={() => setActiveTab('admin')}
+        onOpenSheetsSync={handleOpenSheetsSync}
       />
 
       <main className="main-content">
@@ -55,6 +61,8 @@ export default function App() {
             onDeleteRecord={handleDeleteRecord}
             onClearAll={handleClearAll}
             onRecordsUpdated={(updatedList) => setRecords(updatedList)}
+            isSheetsModalOpen={isSheetsModalOpen}
+            setIsSheetsModalOpen={setIsSheetsModalOpen}
           />
         )}
       </main>

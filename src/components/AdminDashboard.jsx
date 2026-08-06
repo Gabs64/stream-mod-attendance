@@ -11,29 +11,36 @@ const MONTH_NAMES = [
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export default function AdminDashboard({ records, onDeleteRecord, onClearAll, onRecordsUpdated }) {
+export default function AdminDashboard({ 
+  records = [], 
+  onDeleteRecord, 
+  onClearAll, 
+  onRecordsUpdated,
+  isSheetsModalOpen: externalIsSheetsModalOpen,
+  setIsSheetsModalOpen: externalSetIsSheetsModalOpen 
+}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [copiedStatus, setCopiedStatus] = useState(false);
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
   const [importMessage, setImportMessage] = useState({ type: '', text: '' });
-  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
+  const [localIsSheetsModalOpen, setLocalIsSheetsModalOpen] = useState(false);
+
+  const isSheetsModalOpen = externalIsSheetsModalOpen !== undefined ? externalIsSheetsModalOpen : localIsSheetsModalOpen;
+  const setIsSheetsModalOpen = externalSetIsSheetsModalOpen || setLocalIsSheetsModalOpen;
 
   const syncConfig = useMemo(() => getSyncConfig(), [isSheetsModalOpen, records]);
 
-
-  // Calendar State (Default to current date: August 2026)
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 6)); // Aug 6 2026
+  // Calendar State (Default to actual current date)
+  const [currentDate, setCurrentDate] = useState(() => new Date());
 
   // Extract unique dates from records
   const availableDates = useMemo(() => {
-    return Array.from(new Set(records.map(r => r.date).filter(Boolean)));
+    return Array.from(new Set((records || []).map(r => r.date).filter(Boolean)));
   }, [records]);
 
-  // Selected specific date - default to August 6, 2026 if present
-  const [selectedDate, setSelectedDate] = useState(() => {
-    return availableDates.length > 0 ? availableDates[0] : 'August 6, 2026';
-  });
+  // Selected specific date - default to 'ALL' so user sees all records immediately
+  const [selectedDate, setSelectedDate] = useState('ALL');
 
   // Calendar Navigation
   const prevMonth = () => {
@@ -176,7 +183,9 @@ export default function AdminDashboard({ records, onDeleteRecord, onClearAll, on
     e.target.value = '';
   };
 
-  const todayStr = 'August 6, 2026';
+  const todayStr = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }, []);
 
   return (
     <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
