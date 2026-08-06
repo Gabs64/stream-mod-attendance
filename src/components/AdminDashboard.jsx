@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Download, Upload, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Copy, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid, Sheet } from 'lucide-react';
 import { exportToCSV, exportToExcel, copyTableToClipboard, importRecordsFromFile } from '../services/attendanceStorage';
 import { getSyncConfig } from '../services/googleSheetsService';
