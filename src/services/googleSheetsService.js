@@ -1,20 +1,34 @@
 const CONFIG_KEY = 'nini_streammod_google_sheets_config_v1';
 const LOGS_KEY = 'nini_streammod_google_sheets_logs_v1';
 
+// Default built-in Google Apps Script Web App URL
+export const BUILT_IN_WEB_APP_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEB_APP_URL || '';
+
 const DEFAULT_CONFIG = {
-  webAppUrl: '',
+  webAppUrl: BUILT_IN_WEB_APP_URL,
   autoSyncOnSubmit: true,
   lastSyncedAt: null,
-  isConnected: false
+  isConnected: Boolean(BUILT_IN_WEB_APP_URL)
 };
 
 export const getSyncConfig = () => {
   try {
     const data = localStorage.getItem(CONFIG_KEY);
-    return data ? { ...DEFAULT_CONFIG, ...JSON.parse(data) } : DEFAULT_CONFIG;
+    const parsed = data ? JSON.parse(data) : {};
+    const activeUrl = parsed.webAppUrl || BUILT_IN_WEB_APP_URL;
+    return {
+      ...DEFAULT_CONFIG,
+      ...parsed,
+      webAppUrl: activeUrl,
+      isConnected: Boolean(activeUrl)
+    };
   } catch (err) {
     console.error('Error reading Google Sheets config:', err);
-    return DEFAULT_CONFIG;
+    return {
+      ...DEFAULT_CONFIG,
+      webAppUrl: BUILT_IN_WEB_APP_URL,
+      isConnected: Boolean(BUILT_IN_WEB_APP_URL)
+    };
   }
 };
 

@@ -10,7 +10,7 @@ import {
 } from '../services/googleSheetsService';
 
 export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onRecordsUpdated }) {
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'setup' | 'actions' | 'logs'
+  const [activeTab, setActiveTab] = useState('actions'); // 'actions' | 'config' | 'setup' | 'logs'
   const [config, setConfig] = useState(getSyncConfig());
   const [urlInput, setUrlInput] = useState(config.webAppUrl || '');
   const [copiedCode, setCopiedCode] = useState(false);
@@ -230,22 +230,22 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
         {/* Tab Navigation */}
         <div className="sheets-tab-bar">
           <button 
-            className={`sheets-tab ${activeTab === 'config' ? 'active' : ''}`}
-            onClick={() => setActiveTab('config')}
-          >
-            <Settings size={16} /> Connection & Config
-          </button>
-          <button 
             className={`sheets-tab ${activeTab === 'actions' ? 'active' : ''}`}
             onClick={() => setActiveTab('actions')}
           >
-            <Zap size={16} /> Push & Pull Sync
+            <Zap size={16} /> Sync Controls (Push & Pull)
+          </button>
+          <button 
+            className={`sheets-tab ${activeTab === 'config' ? 'active' : ''}`}
+            onClick={() => setActiveTab('config')}
+          >
+            <Settings size={16} /> Endpoint Config
           </button>
           <button 
             className={`sheets-tab ${activeTab === 'setup' ? 'active' : ''}`}
             onClick={() => setActiveTab('setup')}
           >
-            <FileCode size={16} /> Apps Script Setup Guide
+            <FileCode size={16} /> Apps Script Source Code
           </button>
           <button 
             className={`sheets-tab ${activeTab === 'logs' ? 'active' : ''}`}
