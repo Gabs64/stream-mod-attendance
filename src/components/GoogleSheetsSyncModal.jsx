@@ -100,9 +100,10 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
       }
 
       // Merge Google Sheet records with current database records avoiding duplicate IDs
-      const existingIds = new Set(records.map(r => r.id));
+      const safeRecords = Array.isArray(records) ? records : [];
+      const existingIds = new Set(safeRecords.map(r => r.id));
       const newFromSheet = sheetRecords.filter(r => !existingIds.has(r.id));
-      const mergedRecords = [...newFromSheet, ...records];
+      const mergedRecords = [...newFromSheet, ...safeRecords];
 
       // Save merged records into local database
       localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(mergedRecords));
@@ -126,12 +127,14 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
 
     try {
       const sheetRecords = await pullRecordsFromSheet();
+      const safeRecords = Array.isArray(records) ? records : [];
       
       // Combine local records & sheet records, removing duplicates by ID or timestamp+modName
       const recordMap = new Map();
       
       // Add local records first
-      records.forEach(rec => {
+      safeRecords.forEach(rec => {
+        if (!rec) return;
         const key = rec.id || `${rec.date}_${rec.tikTokName}_${rec.time}`;
         recordMap.set(key, rec);
       });

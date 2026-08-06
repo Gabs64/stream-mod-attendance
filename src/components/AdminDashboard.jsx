@@ -112,17 +112,23 @@ export default function AdminDashboard({
   // Map records by formatted date string
   const recordsByDateMap = useMemo(() => {
     const map = {};
-    records.forEach(rec => {
+    const safeList = Array.isArray(records) ? records : [];
+    safeList.forEach(rec => {
+      if (!rec) return;
       const d = rec.date;
-      if (!map[d]) map[d] = [];
-      map[d].push(rec);
+      if (d) {
+        if (!map[d]) map[d] = [];
+        map[d].push(rec);
+      }
     });
     return map;
   }, [records]);
 
   // Filter records based on selection, search term, and status filter
   const filteredRecords = useMemo(() => {
-    return records.filter(rec => {
+    const safeList = Array.isArray(records) ? records : [];
+    return safeList.filter(rec => {
+      if (!rec) return false;
       const matchesDate = selectedDate === 'ALL' || rec.date === selectedDate;
 
       const matchesSearch =

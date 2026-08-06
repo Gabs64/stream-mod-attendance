@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import AttendanceForm from './components/AttendanceForm';
 import AdminDashboard from './components/AdminDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 import { getAttendanceRecords, saveAttendanceRecord, deleteAttendanceRecord, clearAllRecords } from './services/attendanceStorage';
 import { getSyncConfig, pullRecordsFromSheet } from './services/googleSheetsService';
 
@@ -12,17 +13,18 @@ export default function App() {
 
   useEffect(() => {
     const loaded = getAttendanceRecords();
-    setRecords(loaded);
+    const safeLoaded = Array.isArray(loaded) ? loaded : [];
+    setRecords(safeLoaded);
 
     // Auto-sync pull from Google Sheet on app startup if connected
     const config = getSyncConfig();
     if (config.webAppUrl && config.isConnected) {
       pullRecordsFromSheet().then(sheetRecords => {
-        if (sheetRecords && sheetRecords.length > 0) {
-          const existingIds = new Set(loaded.map(r => r.id));
+        if (Array.isArray(sheetRecords) && sheetRecords.length > 0) {
+          const existingIds = new Set(safeLoaded.map(r => r.id));
           const newFromSheet = sheetRecords.filter(r => !existingIds.has(r.id));
           if (newFromSheet.length > 0) {
-            const merged = [...newFromSheet, ...loaded];
+            const merged = [...newFromSheet, ...safeLoaded];
             localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(merged));
             setRecords(merged);
           }
@@ -63,27 +65,29 @@ export default function App() {
       />
 
       <main className="main-content">
-        {activeTab === 'form' ? (
-          <div>
-            <div className="page-header">
-              <h1 className="page-title">Livestream Moderator Attendance</h1>
-              <p className="page-subtitle">
-                Quickly record your attendance status for upcoming streams. Automatic timestamps are populated for accuracy.
-              </p>
+        <ErrorBoundary>
+          {activeTab === 'form' ? (
+            <div>
+              <div className="page-header">
+                <h1 className="page-title">Livestream Moderator Attendance</h1>
+                <p className="page-subtitle">
+                  Quickly record your attendance status for upcoming streams. Automatic timestamps are populated for accuracy.
+                </p>
+              </div>
+              
+              <AttendanceForm onRecordSubmitted={handleRecordSubmitted} />
             </div>
-            
-            <AttendanceForm onRecordSubmitted={handleRecordSubmitted} />
-          </div>
-        ) : (
-          <AdminDashboard
-            records={records}
-            onDeleteRecord={handleDeleteRecord}
-            onClearAll={handleClearAll}
-            onRecordsUpdated={(updatedList) => setRecords(updatedList)}
-            isSheetsModalOpen={isSheetsModalOpen}
-            setIsSheetsModalOpen={setIsSheetsModalOpen}
-          />
-        )}
+          ) : (
+            <AdminDashboard
+              records={records}
+              onDeleteRecord={handleDeleteRecord}
+              onClearAll={handleClearAll}
+              onRecordsUpdated={(updatedList) => setRecords(updatedList)}
+              isSheetsModalOpen={isSheetsModalOpen}
+              setIsSheetsModalOpen={setIsSheetsModalOpen}
+            />
+          )}
+        </ErrorBoundary>
       </main>
 
       <footer className="footer">
