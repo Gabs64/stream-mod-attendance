@@ -2,7 +2,7 @@ const CONFIG_KEY = 'nini_streammod_google_sheets_config_v1';
 const LOGS_KEY = 'nini_streammod_google_sheets_logs_v1';
 
 // Default built-in Google Apps Script Web App URL
-export const BUILT_IN_WEB_APP_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEB_APP_URL || '';
+export const BUILT_IN_WEB_APP_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbw2V5Jnn317NVtldpy2ryGxoSM7Wk5FcEmAt2cR_eIdIlU5QrnmQUQc3v0bI3XFZSnF/exec';
 
 const DEFAULT_CONFIG = {
   webAppUrl: BUILT_IN_WEB_APP_URL,
