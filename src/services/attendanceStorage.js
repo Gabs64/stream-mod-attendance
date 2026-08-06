@@ -1,4 +1,6 @@
 import * as XLSX from 'xlsx';
+import { appendRecordToSheet } from './googleSheetsService';
+
 
 const STORAGE_KEY = 'nini_streammod_attendance_records_v1';
 
@@ -59,6 +61,12 @@ export const saveAttendanceRecord = (newRecord) => {
     };
     const updated = [recordWithMeta, ...existing];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    
+    // Auto-sync single record to Google Sheet in background if enabled
+    appendRecordToSheet(recordWithMeta).catch(err => {
+      console.warn('Background Google Sheets sync failed:', err);
+    });
+
     return recordWithMeta;
   } catch (err) {
     console.error('Error saving attendance record:', err);

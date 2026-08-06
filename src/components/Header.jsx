@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, ClipboardList, LayoutDashboard, Clock } from 'lucide-react';
+import { ShieldCheck, ClipboardList, LayoutDashboard, Clock, Sheet } from 'lucide-react';
+import { getSyncConfig } from '../services/googleSheetsService';
 
-export default function Header({ activeTab, setActiveTab, recordCount }) {
+export default function Header({ activeTab, setActiveTab, recordCount, onOpenSheetsSync }) {
   const [liveTime, setLiveTime] = useState('');
+  const [syncConfig, setSyncConfig] = useState(getSyncConfig());
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       setLiveTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setSyncConfig(getSyncConfig());
     };
     updateTime();
-    const interval = setInterval(updateTime, 1000);
+    const interval = setInterval(updateTime, 2000);
     return () => clearInterval(interval);
   }, []);
+
 
   return (
     <header className="navbar">
@@ -57,6 +61,18 @@ export default function Header({ activeTab, setActiveTab, recordCount }) {
               {liveTime || '00:00:00'}
             </span>
           </div>
+
+          <button
+            className="header-sheets-btn"
+            onClick={onOpenSheetsSync}
+            title={syncConfig.isConnected ? "Google Sheet Sync Active" : "Click to Setup Google Sheet Sync"}
+          >
+            <Sheet size={15} color={syncConfig.isConnected ? "#10B981" : "#9CA3AF"} />
+            <span className="header-sheets-text">
+              {syncConfig.isConnected ? "Sheet Synced" : "Sheet Sync"}
+            </span>
+            <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
+          </button>
 
           <nav className="nav-tabs">
             <button

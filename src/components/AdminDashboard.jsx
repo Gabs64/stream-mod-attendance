@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Search, Download, Upload, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Copy, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid } from 'lucide-react';
+import { Search, Download, Upload, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Copy, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid, Sheet } from 'lucide-react';
 import { exportToCSV, exportToExcel, copyTableToClipboard, importRecordsFromFile } from '../services/attendanceStorage';
+import { getSyncConfig } from '../services/googleSheetsService';
+import GoogleSheetsSyncModal from './GoogleSheetsSyncModal';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -15,8 +17,10 @@ export default function AdminDashboard({ records, onDeleteRecord, onClearAll, on
   const [copiedStatus, setCopiedStatus] = useState(false);
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
   const [importMessage, setImportMessage] = useState({ type: '', text: '' });
+  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
 
-  const fileInputRef = useRef(null);
+  const syncConfig = useMemo(() => getSyncConfig(), [isSheetsModalOpen, records]);
+
 
   // Calendar State (Default to current date: August 2026)
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 6)); // Aug 6 2026
@@ -413,6 +417,26 @@ export default function AdminDashboard({ records, onDeleteRecord, onClearAll, on
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Google Sheets Sync Button */}
+          <button
+            className="btn-secondary"
+            onClick={() => setIsSheetsModalOpen(true)}
+            title="Configure real-time Google Sheets sync or push/pull data"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
+              border: '1px solid rgba(16, 185, 129, 0.5)',
+              color: '#34D399',
+              fontWeight: 700
+            }}
+          >
+            <Sheet size={16} color="#10B981" />
+            <span>Google Sheets Sync</span>
+            <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
+          </button>
+
           {/* Import Button */}
           <button
             className="btn-secondary"
@@ -571,6 +595,13 @@ export default function AdminDashboard({ records, onDeleteRecord, onClearAll, on
           </table>
         )}
       </div>
+
+      <GoogleSheetsSyncModal
+        isOpen={isSheetsModalOpen}
+        onClose={() => setIsSheetsModalOpen(false)}
+        records={records}
+        onRecordsUpdated={onRecordsUpdated}
+      />
     </div>
   );
 }

@@ -1,0 +1,310 @@
+const CONFIG_KEY = 'nini_streammod_google_sheets_config_v1';
+const LOGS_KEY = 'nini_streammod_google_sheets_logs_v1';
+
+const DEFAULT_CONFIG = {
+  webAppUrl: '',
+  autoSyncOnSubmit: true,
+  lastSyncedAt: null,
+  isConnected: false
+};
+
+export const getSyncConfig = () => {
+  try {
+    const data = localStorage.getItem(CONFIG_KEY);
+    return data ? { ...DEFAULT_CONFIG, ...JSON.parse(data) } : DEFAULT_CONFIG;
+  } catch (err) {
+    console.error('Error reading Google Sheets config:', err);
+    return DEFAULT_CONFIG;
+  }
+};
+
+export const saveSyncConfig = (newConfig) => {
+  try {
+    const updated = { ...getSyncConfig(), ...newConfig };
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error saving Google Sheets config:', err);
+    throw err;
+  }
+};
+
+export const getSyncLogs = () => {
+  try {
+    const data = localStorage.getItem(LOGS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (err) {
+    return [];
+  }
+};
+
+export const addSyncLog = (type, message, status = 'success') => {
+  try {
+    const logs = getSyncLogs();
+    const newLog = {
+      id: 'log-' + Date.now(),
+      timestamp: new Date().toISOString(),
+      type,
+      message,
+      status
+    };
+    const updated = [newLog, ...logs].slice(0, 50); // Keep last 50 logs
+    localStorage.setItem(LOGS_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error writing sync log:', err);
+  }
+};
+
+export const getAppsScriptTemplate = () => {
+  return `/**
+ * Google Apps Script for Stream Mod Attendance Database Sync
+ * 
+ * Instructions:
+ * 1. Open your Google Sheet.
+ * 2. Click Extensions > Apps Script.
+ * 3. Delete existing code and paste this ENTIRE script.
+ * 4. Click "Save" icon.
+ * 5. Click "Deploy" > "New deployment".
+ * 6. Select type: "Web app".
+ * 7. Set Description: "Attendance Sync API".
+ * 8. Execute as: "Me".
+ * 9. Who has access: "Anyone" (CRITICAL!).
+ * 10. Click "Deploy", authorize access, and copy the Web App URL!
+ */
+
+function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  
+  if (data.length <= 1) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', records: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  var headers = data[0];
+  var records = [];
+  
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row[0] && !row[1] && !row[2]) continue; // Skip empty rows
+    
+    records.push({
+      id: String(row[0] || ''),
+      tikTokName: String(row[1] || '').replace(/^@/, ''),
+      twitchName: String(row[2] || '').replace(/^@/, ''),
+      date: String(row[3] || ''),
+      time: String(row[4] || ''),
+      status: String(row[5] || ''),
+      reason: String(row[6] === 'N/A' ? '' : (row[6] || '')),
+      submissionTimestamp: String(row[7] || '')
+    });
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    totalRecords: records.length,
+    records: records
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var contents = JSON.parse(e.postData.contents);
+    var action = contents.action || 'PUSH_ALL';
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    
+    // Ensure header row exists
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        'Attendance ID',
+        'TikTok Username',
+        'Twitch Username',
+        'Date',
+        'Time',
+        'Status',
+        'Reason for Absence',
+        'Submission Timestamp'
+      ]);
+      sheet.getRange(1, 1, 1, 8).setFontWeight('bold').setBackground('#4F46E5').setFontColor('#FFFFFF');
+    }
+    
+    if (action === 'PING') {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'success',
+        message: 'Google Sheet connected successfully!',
+        sheetName: sheet.getName(),
+        totalRows: Math.max(0, sheet.getLastRow() - 1)
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (action === 'APPEND') {
+      var r = contents.record;
+      sheet.appendRow([
+        r.id || '',
+        '@' + (r.tikTokName || ''),
+        '@' + (r.twitchName || ''),
+        r.date || '',
+        r.time || '',
+        r.status || '',
+        r.status === 'Absent' ? (r.reason || 'N/A') : 'N/A',
+        r.submissionTimestamp || new Date().toISOString()
+      ]);
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'success',
+        message: 'Record appended successfully'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (action === 'PUSH_ALL') {
+      // Clear data rows, keep header
+      if (sheet.getLastRow() > 1) {
+        sheet.getRange(2, 1, sheet.getLastRow() - 1, 8).clearContent();
+      }
+      
+      var records = contents.records || [];
+      if (records.length > 0) {
+        var rows = records.map(function(r) {
+          return [
+            r.id || '',
+            '@' + (r.tikTokName || ''),
+            '@' + (r.twitchName || ''),
+            r.date || '',
+            r.time || '',
+            r.status || '',
+            r.status === 'Absent' ? (r.reason || 'N/A') : 'N/A',
+            r.submissionTimestamp || new Date().toISOString()
+          ];
+        });
+        
+        sheet.getRange(2, 1, rows.length, 8).setValues(rows);
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'success',
+        message: records.length + ' attendance records pushed to sheet.',
+        syncedCount: records.length
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: 'Unknown action' }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+`;
+};
+
+const sendToGoogleSheets = async (url, payload) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  if (result.status === 'error') {
+    throw new Error(result.message || 'Google Sheets API returned error');
+  }
+  return result;
+};
+
+export const testConnection = async (webAppUrl) => {
+  if (!webAppUrl || !webAppUrl.trim()) {
+    throw new Error('Please enter a valid Google Apps Script Web App URL.');
+  }
+
+  const url = webAppUrl.trim();
+  try {
+    const result = await sendToGoogleSheets(url, { action: 'PING' });
+    saveSyncConfig({ webAppUrl: url, isConnected: true });
+    addSyncLog('TEST_CONNECTION', 'Successfully connected to Google Sheet', 'success');
+    return result;
+  } catch (err) {
+    saveSyncConfig({ isConnected: false });
+    addSyncLog('TEST_CONNECTION', `Connection failed: ${err.message}`, 'error');
+    throw err;
+  }
+};
+
+export const pushRecordsToSheet = async (records) => {
+  const config = getSyncConfig();
+  if (!config.webAppUrl || !config.isConnected) {
+    throw new Error('Google Sheet is not configured or connected.');
+  }
+
+  try {
+    const result = await sendToGoogleSheets(config.webAppUrl, {
+      action: 'PUSH_ALL',
+      records: records
+    });
+    
+    const now = new Date().toISOString();
+    saveSyncConfig({ lastSyncedAt: now, isConnected: true });
+    addSyncLog('PUSH_ALL', `Pushed ${records.length} records to Google Sheet`, 'success');
+    return result;
+  } catch (err) {
+    addSyncLog('PUSH_ALL', `Push failed: ${err.message}`, 'error');
+    throw err;
+  }
+};
+
+export const appendRecordToSheet = async (record) => {
+  const config = getSyncConfig();
+  if (!config.webAppUrl || !config.isConnected || !config.autoSyncOnSubmit) {
+    return null;
+  }
+
+  try {
+    const result = await sendToGoogleSheets(config.webAppUrl, {
+      action: 'APPEND',
+      record: record
+    });
+    
+    const now = new Date().toISOString();
+    saveSyncConfig({ lastSyncedAt: now, isConnected: true });
+    addSyncLog('APPEND_RECORD', `Appended attendance for @${record.tikTokName || record.twitchName} to Google Sheet`, 'success');
+    return result;
+  } catch (err) {
+    console.warn('Auto-sync append failed:', err);
+    addSyncLog('APPEND_RECORD', `Auto-sync failed: ${err.message}`, 'error');
+    return null;
+  }
+};
+
+export const pullRecordsFromSheet = async () => {
+  const config = getSyncConfig();
+  if (!config.webAppUrl) {
+    throw new Error('Google Sheet URL is not configured.');
+  }
+
+  try {
+    const response = await fetch(config.webAppUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.status !== 'success') {
+      throw new Error(data.message || 'Failed to pull records from Google Sheet');
+    }
+
+    const now = new Date().toISOString();
+    saveSyncConfig({ lastSyncedAt: now, isConnected: true });
+    addSyncLog('PULL_ALL', `Pulled ${data.records?.length || 0} records from Google Sheet`, 'success');
+    return data.records || [];
+  } catch (err) {
+    addSyncLog('PULL_ALL', `Pull failed: ${err.message}`, 'error');
+    throw err;
+  }
+};

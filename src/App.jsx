@@ -34,6 +34,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         recordCount={records.length}
+        onOpenSheetsSync={() => setActiveTab('admin')}
       />
 
       <main className="main-content">

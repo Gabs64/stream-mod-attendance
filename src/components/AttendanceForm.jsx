@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, CheckCircle2, XCircle, Send, AlertTriangle, Calendar, Clock, FileText } from 'lucide-react';
+import { User, CheckCircle2, XCircle, Send, AlertTriangle, Calendar, Clock, FileText, Sheet } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getSyncConfig } from '../services/googleSheetsService';
+
 
 export default function AttendanceForm({ onRecordSubmitted }) {
   const [tikTokName, setTikTokName] = useState('');
@@ -310,6 +312,23 @@ export default function AttendanceForm({ onRecordSubmitted }) {
                   <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
                     <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.8rem', marginBottom: '0.2rem' }}>Reason:</span>
                     <span style={{ color: '#FDA4AF', fontStyle: 'italic' }}>"{submittedData.reason}"</span>
+                  </div>
+                )}
+
+                {getSyncConfig().isConnected && getSyncConfig().autoSyncOnSubmit && (
+                  <div style={{
+                    marginTop: '0.75rem',
+                    paddingTop: '0.75rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    color: '#34D399',
+                    fontSize: '0.8rem',
+                    fontWeight: 600
+                  }}>
+                    <Sheet size={14} color="#10B981" />
+                    <span>Auto-Synced to connected Google Sheet</span>
                   </div>
                 )}
               </div>
