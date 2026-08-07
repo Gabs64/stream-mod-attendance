@@ -26,7 +26,7 @@ export default function AttendanceForm({ onRecordSubmitted }) {
     const dateStr = now.toLocaleDateString('en-US', optionsDate);
 
     // Format Time: 8:15 PM
-    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
     setFormattedDate(dateStr);
     setFormattedTime(timeStr);
@@ -67,7 +67,7 @@ export default function AttendanceForm({ onRecordSubmitted }) {
     // Refresh current time right at submission moment
     const now = new Date();
     const submitDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const submitTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const submitTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
     const newRecord = {
       tikTokName: tikTokName.trim(),

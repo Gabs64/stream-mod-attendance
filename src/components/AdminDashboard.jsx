@@ -255,13 +255,41 @@ export default function AdminDashboard({
 
   const formatDisplayTime = (timeStr) => {
     if (!timeStr) return '';
-    if (typeof timeStr === 'string' && (timeStr.includes('GMT') || timeStr.includes('Standard') || timeStr.length > 25)) {
-      const d = new Date(timeStr);
+    const str = String(timeStr).trim();
+
+    // If already contains AM or PM
+    if (str.toLowerCase().includes('am') || str.toLowerCase().includes('pm')) {
+      return str;
+    }
+
+    // Handle full date strings or ISO strings
+    if (str.includes('GMT') || str.includes('T') || str.length > 20) {
+      const d = new Date(str);
       if (!isNaN(d.getTime())) {
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
       }
     }
-    return timeStr;
+
+    // Handle 24-hour "HH:MM" or "HH:MM:SS" time strings
+    if (str.includes(':')) {
+      const parts = str.split(':');
+      let hours = parseInt(parts[0], 10);
+      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
+      const seconds = parts[2] ? parts[2].padStart(2, '0') : null;
+
+      if (!isNaN(hours)) {
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const formattedHours = String(hours).padStart(2, '0');
+
+        return seconds
+          ? `${formattedHours}:${minutes}:${seconds} ${ampm}`
+          : `${formattedHours}:${minutes} ${ampm}`;
+      }
+    }
+
+    return str;
   };
 
   return (

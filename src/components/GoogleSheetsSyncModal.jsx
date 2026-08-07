@@ -224,7 +224,7 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
                 </span>
                 {config.lastSyncedAt && (
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    Last Synced: {new Date(config.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    Last Synced: {new Date(config.lastSyncedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                   </span>
                 )}
               </div>
