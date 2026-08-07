@@ -466,25 +466,6 @@ export default function AdminDashboard({
             <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
           </button>
 
-          {/* Import Button */}
-          <button
-            className="btn-secondary"
-            onClick={handleImportClick}
-            title="Import attendance records from Excel (.xlsx) or CSV file"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(145, 70, 255, 0.2))',
-              border: '1px solid rgba(0, 242, 254, 0.4)',
-              color: 'var(--color-tiktok-cyan)',
-              fontWeight: 700
-            }}
-          >
-            <Upload size={16} />
-            <span>Import (.xlsx / .csv)</span>
-          </button>
-
           <button
             className="btn-secondary"
             onClick={() => exportToExcel(filteredRecords, selectedDate)}
@@ -501,16 +482,6 @@ export default function AdminDashboard({
           >
             <Download size={16} />
             <span>Download .xlsx</span>
-          </button>
-
-          <button
-            className="btn-secondary"
-            onClick={handleCopyClipboard}
-            title="Copy table data to paste directly into Microsoft Excel (Ctrl+V)"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            {copiedStatus ? <Check size={16} style={{ color: '#34D399' }} /> : <Copy size={16} />}
-            <span>{copiedStatus ? 'Copied for Excel!' : 'Copy for Excel'}</span>
           </button>
 
           <button
