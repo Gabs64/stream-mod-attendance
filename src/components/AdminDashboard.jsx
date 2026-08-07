@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Download, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid } from 'lucide-react';
-import { exportToCSV, exportToExcel } from '../services/attendanceStorage';
+import { Search, Download, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid, RefreshCw } from 'lucide-react';
+import { exportToCSV, exportToExcel, getAttendanceRecords } from '../services/attendanceStorage';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -13,11 +13,14 @@ export default function AdminDashboard({
   records = [], 
   onDeleteRecord, 
   onClearAll, 
-  onRecordsUpdated
+  onRecordsUpdated,
+  onRefreshRecords
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshToast, setRefreshToast] = useState('');
 
   // Calendar State (Default to actual current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -137,12 +140,62 @@ export default function AdminDashboard({
   const attendanceRate = totalSubmissions > 0
     ? Math.round((presentCount / totalSubmissions) * 100)
     : 0;
-  const todayStr = useMemo(() => {
-    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  }, []);
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
+    setRefreshToast('Refreshing data...');
+    
+    setTimeout(() => {
+      const latest = getAttendanceRecords();
+      if (onRecordsUpdated) {
+        onRecordsUpdated(latest);
+      }
+      if (onRefreshRecords) {
+        onRefreshRecords();
+      }
+      setIsRefreshing(false);
+      setRefreshToast('Records updated!');
+      setTimeout(() => setRefreshToast(''), 2500);
+    }, 450);
+  };
+
+  const formatDisplayTime = (timeStr) => {
+    if (!timeStr) return '';
+    if (typeof timeStr === 'string' && (timeStr.includes('GMT') || timeStr.includes('Standard') || timeStr.length > 25)) {
+      const d = new Date(timeStr);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+    }
+    return timeStr;
+  };
 
   return (
     <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
+      {/* Toast Notification Banner for Refresh */}
+      {refreshToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          zIndex: 300,
+          background: 'rgba(255, 0, 127, 0.9)',
+          color: 'white',
+          padding: '0.65rem 1.2rem',
+          borderRadius: 'var(--radius-md)',
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 700,
+          fontSize: '0.9rem',
+          boxShadow: '0 4px 20px rgba(255, 0, 127, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          animation: 'fadeIn 0.2s ease'
+        }}>
+          <RefreshCw size={16} className={isRefreshing ? 'spin-icon' : ''} />
+          <span>{refreshToast}</span>
+        </div>
+      )}
+
       <div className="page-header" style={{ marginBottom: '1.5rem', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 className="page-title" style={{ fontSize: '1.85rem' }}>Attendance Calendar & Records</h2>
@@ -360,6 +413,24 @@ export default function AdminDashboard({
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
             className="btn-secondary"
+            onClick={handleManualRefresh}
+            title="Refresh attendance records and daily rosters"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'rgba(255, 0, 127, 0.15)',
+              border: '1px solid rgba(255, 0, 127, 0.35)',
+              color: 'var(--text-primary)',
+              fontWeight: 700
+            }}
+          >
+            <RefreshCw size={16} className={isRefreshing ? 'spin-icon' : ''} style={{ color: 'var(--color-pink)' }} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
+
+          <button
+            className="btn-secondary"
             onClick={() => exportToExcel(filteredRecords, selectedDate)}
             title="Download Excel spreadsheet for selected day"
             style={{
@@ -412,7 +483,7 @@ export default function AdminDashboard({
               No attendance records for {selectedDate === 'ALL' ? 'this query' : selectedDate}
             </p>
             <p style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
-              Select a date on the calendar above or click 'Import' to upload records.
+              Select a date on the calendar above or submit attendance.
             </p>
           </div>
         ) : (
@@ -448,7 +519,7 @@ export default function AdminDashboard({
 
                   <td>
                     <div style={{ fontWeight: 600, color: 'var(--color-tiktok-cyan)', fontFamily: 'monospace' }}>
-                      {rec.time}
+                      {formatDisplayTime(rec.time)}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       {rec.date}

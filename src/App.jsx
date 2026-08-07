@@ -113,6 +113,10 @@ export default function App() {
               onDeleteRecord={handleDeleteRecord}
               onClearAll={handleClearAll}
               onRecordsUpdated={(updatedList) => setRecords(updatedList)}
+              onRefreshRecords={() => {
+                const loaded = getAttendanceRecords();
+                setRecords(Array.isArray(loaded) ? loaded : []);
+              }}
             />
           )}
         </ErrorBoundary>
