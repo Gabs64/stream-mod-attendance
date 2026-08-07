@@ -4,7 +4,7 @@ import AttendanceForm from './components/AttendanceForm';
 import AdminDashboard from './components/AdminDashboard';
 import AdminLogin from './components/AdminLogin';
 import ErrorBoundary from './components/ErrorBoundary';
-import { getAttendanceRecords, saveAttendanceRecord, deleteAttendanceRecord, clearAllRecords } from './services/attendanceStorage';
+import { getAttendanceRecords, saveAttendanceRecord, deleteAttendanceRecord, deleteMultipleRecords, clearAllRecords } from './services/attendanceStorage';
 import { getSyncConfig, pullRecordsFromSheet } from './services/googleSheetsService';
 
 export default function App() {
@@ -147,6 +147,10 @@ export default function App() {
             <AdminDashboard
               records={records}
               onDeleteRecord={handleDeleteRecord}
+              onBulkDeleteRecords={(ids) => {
+                const updated = deleteMultipleRecords(ids);
+                setRecords(updated);
+              }}
               onClearAll={handleClearAll}
               onRecordsUpdated={(updatedList) => setRecords(updatedList)}
               onRefreshRecords={handleRefreshRecords}

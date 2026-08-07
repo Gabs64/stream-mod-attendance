@@ -68,6 +68,24 @@ export const deleteAttendanceRecord = (id) => {
   }
 };
 
+export const deleteMultipleRecords = (idsToDelete = []) => {
+  try {
+    const existing = getAttendanceRecords();
+    const updated = existing.filter(rec => !idsToDelete.includes(rec.id));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // Sync updated remaining dataset to connected Google Sheet
+    pushRecordsToSheet(updated).catch(err => {
+      console.warn('Background Google Sheets bulk delete push failed:', err);
+    });
+
+    return updated;
+  } catch (err) {
+    console.error('Error bulk deleting records:', err);
+    return getAttendanceRecords();
+  }
+};
+
 export const clearAllRecords = () => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([]));

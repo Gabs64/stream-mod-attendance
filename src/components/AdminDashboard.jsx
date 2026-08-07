@@ -12,6 +12,7 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export default function AdminDashboard({ 
   records = [], 
   onDeleteRecord, 
+  onBulkDeleteRecords,
   onClearAll, 
   onRecordsUpdated,
   onRefreshRecords
@@ -21,6 +22,7 @@ export default function AdminDashboard({
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshToast, setRefreshToast] = useState('');
+  const [selectedRecordIds, setSelectedRecordIds] = useState([]);
 
   // Calendar State (Default to actual current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -164,6 +166,58 @@ export default function AdminDashboard({
     } finally {
       setIsRefreshing(false);
       setTimeout(() => setRefreshToast(''), 2500);
+    }
+  };
+
+  const isAllSelected = useMemo(() => {
+    if (!filteredRecords || filteredRecords.length === 0) return false;
+    return filteredRecords.every(r => selectedRecordIds.includes(r.id));
+  }, [filteredRecords, selectedRecordIds]);
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedRecordIds([]);
+    } else {
+      const allIds = filteredRecords.map(r => r.id);
+      setSelectedRecordIds(allIds);
+    }
+  };
+
+  const handleToggleSelectOne = (id) => {
+    setSelectedRecordIds(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handlePurgeSelected = async () => {
+    const count = selectedRecordIds.length;
+    if (count === 0) return;
+
+    if (window.confirm(`Are you sure you want to permanently purge ${count} selected record(s)? This will also delete their rows from Google Sheets.`)) {
+      setIsRefreshing(true);
+      setRefreshToast(`Purging ${count} record(s)...`);
+
+      try {
+        if (onBulkDeleteRecords) {
+          await onBulkDeleteRecords(selectedRecordIds);
+        } else {
+          for (const id of selectedRecordIds) {
+            onDeleteRecord(id);
+          }
+        }
+        setSelectedRecordIds([]);
+        setRefreshToast(`Successfully purged ${count} record(s)!`);
+      } catch (err) {
+        console.error('Purge error:', err);
+        setRefreshToast('Purge complete');
+      } finally {
+        setIsRefreshing(false);
+        setTimeout(() => setRefreshToast(''), 3000);
+      }
     }
   };
 
@@ -420,6 +474,27 @@ export default function AdminDashboard({
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {selectedRecordIds.length > 0 && (
+            <button
+              className="btn-secondary"
+              onClick={handlePurgeSelected}
+              title="Purge selected attendance records"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(225, 29, 72, 0.25))',
+                border: '1px solid rgba(239, 68, 68, 0.6)',
+                color: '#FDA4AF',
+                fontWeight: 700,
+                boxShadow: '0 0 14px rgba(239, 68, 68, 0.3)'
+              }}
+            >
+              <Trash2 size={16} />
+              <span>Purge Selected ({selectedRecordIds.length})</span>
+            </button>
+          )}
+
           <button
             className="btn-secondary"
             onClick={handleManualRefresh}
@@ -499,6 +574,15 @@ export default function AdminDashboard({
           <table className="data-table">
             <thead>
               <tr>
+                <th style={{ width: '42px', textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={handleToggleSelectAll}
+                    title={isAllSelected ? "Deselect All" : "Select All"}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-pink)' }}
+                  />
+                </th>
                 <th>Moderator</th>
                 <th>Platforms</th>
                 <th>Date & Time</th>
@@ -508,16 +592,26 @@ export default function AdminDashboard({
               </tr>
             </thead>
             <tbody>
-              {filteredRecords.map((rec) => (
-                <tr key={rec.id}>
-                  <td>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                      @{rec.twitchName}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      ID: {rec.id}
-                    </div>
-                  </td>
+              {filteredRecords.map((rec) => {
+                const isSelected = selectedRecordIds.includes(rec.id);
+                return (
+                  <tr key={rec.id} style={{ background: isSelected ? 'rgba(255, 0, 127, 0.12)' : undefined }}>
+                    <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleSelectOne(rec.id)}
+                        style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-pink)' }}
+                      />
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                        @{rec.twitchName}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        ID: {rec.id}
+                      </div>
+                    </td>
 
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', fontSize: '0.85rem' }}>
@@ -562,7 +656,8 @@ export default function AdminDashboard({
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         )}
