@@ -492,18 +492,18 @@ textarea.input-control {
 }
 
 .btn-secondary {
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.15rem;
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: var(--transition-fast);
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .btn-secondary:hover {
@@ -549,24 +549,27 @@ textarea.input-control {
 
 .actions-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .search-filter-group {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-wrap: nowrap !important;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-input-wrap {
   position: relative;
-  min-width: 270px;
-  flex: 1;
+  width: 200px;
+  flex-shrink: 0;
 }
 
 .search-input-wrap .search-icon {

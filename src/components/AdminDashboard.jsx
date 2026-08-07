@@ -456,7 +456,7 @@ export default function AdminDashboard({
             <input
               type="text"
               className="input-control"
-              placeholder="Search by TikTok or Twitch handle..."
+              placeholder="Search moderator..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -487,6 +487,7 @@ export default function AdminDashboard({
                 fontWeight: 700,
                 boxShadow: '0 0 14px rgba(239, 68, 68, 0.3)',
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
                 animation: 'fadeIn 0.2s ease'
               }}
             >
@@ -496,7 +497,7 @@ export default function AdminDashboard({
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'nowrap' }}>
 
           <button
             className="btn-secondary"
