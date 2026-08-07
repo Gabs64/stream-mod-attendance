@@ -496,7 +496,7 @@ export default function AdminDashboard({
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'nowrap' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
 
           <button
             className="btn-secondary"
