@@ -180,7 +180,7 @@ export default function App() {
                   Quickly record your attendance status for upcoming streams. Automatic timestamps are populated for accuracy.
                 </p>
               </div>
-              
+
               <AttendanceForm onRecordSubmitted={handleRecordSubmitted} />
             </div>
           ) : !isAdminAuthenticated ? (
