@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, CheckCircle2, XCircle, Send, AlertTriangle, Calendar, Clock, FileText, Sheet } from 'lucide-react';
+import { User, CheckCircle2, XCircle, Send, AlertTriangle, Calendar, Clock, FileText, Sheet, Camera } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { getSyncConfig } from '../services/googleSheetsService';
 
@@ -315,22 +315,37 @@ export default function AttendanceForm({ onRecordSubmitted }) {
                   </div>
                 )}
 
-                {getSyncConfig().isConnected && getSyncConfig().autoSyncOnSubmit && (
-                  <div style={{
-                    marginTop: '0.75rem',
-                    paddingTop: '0.75rem',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    color: '#34D399',
-                    fontSize: '0.8rem',
-                    fontWeight: 600
-                  }}>
-                    <Sheet size={14} color="#10B981" />
-                    <span>Auto-Synced to connected Google Sheet</span>
-                  </div>
-                )}
+                <div style={{
+                  marginTop: '0.85rem',
+                  paddingTop: '0.85rem',
+                  borderTop: '1px solid rgba(255, 105, 180, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem',
+                  fontWeight: 600
+                }}>
+                  <Camera size={16} style={{ color: 'var(--color-pink)', flexShrink: 0 }} />
+                  <span>
+                    Screenshot this and send it{' '}
+                    <a
+                      href="https://discord.com/channels/1068487182525931581/1532276979037110272"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: 'var(--color-pink)',
+                        textDecoration: 'underline',
+                        fontWeight: 700,
+                        transition: 'var(--transition-fast)'
+                      }}
+                      onMouseOver={(e) => e.target.style.color = '#FF2A85'}
+                      onMouseOut={(e) => e.target.style.color = 'var(--color-pink)'}
+                    >
+                      here
+                    </a>.
+                  </span>
+                </div>
               </div>
             )}
 
