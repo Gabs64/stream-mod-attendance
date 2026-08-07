@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Lock, User, KeyRound, ShieldAlert, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, User, KeyRound, ShieldAlert, ArrowRight, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
-export default function AdminLogin({ onLoginSuccess }) {
+export default function AdminLogin({ onLoginSuccess, onNavigate }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -138,6 +138,29 @@ export default function AdminLogin({ onLoginSuccess }) {
             <ArrowRight size={18} />
           </button>
         </form>
+
+        {onNavigate && (
+          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => onNavigate('/')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <ArrowLeft size={15} style={{ color: 'var(--color-pink)' }} />
+              <span>Back to Moderator Form</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

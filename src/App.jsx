@@ -105,7 +105,7 @@ export default function App() {
             </div>
           ) : !isAdminAuthenticated ? (
             /* Administrator Login Portal */
-            <AdminLogin onLoginSuccess={handleAdminLoginSuccess} />
+            <AdminLogin onLoginSuccess={handleAdminLoginSuccess} onNavigate={handleNavigate} />
           ) : (
             /* Authenticated Administrator Dashboard */
             <AdminDashboard

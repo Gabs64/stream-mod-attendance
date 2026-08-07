@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Clock, Sheet, LogOut, Lock } from 'lucide-react';
+import { ShieldCheck, Clock, Sheet, LogOut, Lock, ArrowLeft } from 'lucide-react';
 import { getSyncConfig } from '../services/googleSheetsService';
 
 export default function Header({
@@ -77,6 +77,29 @@ export default function Header({
               {liveTime || '00:00:00'}
             </span>
           </div>
+
+          {/* If on Admin page, show Back to Mod Form button */}
+          {isAdminRoute && (
+            <button
+              onClick={() => onNavigate('/')}
+              className="btn-secondary"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.45rem 0.9rem',
+                fontSize: '0.85rem',
+                background: 'rgba(255, 105, 180, 0.12)',
+                borderColor: 'rgba(255, 0, 127, 0.3)',
+                color: 'var(--text-primary)',
+                fontWeight: 600
+              }}
+              title="Return to Stream Moderator Attendance Form"
+            >
+              <ArrowLeft size={16} style={{ color: 'var(--color-pink)' }} />
+              <span>Back to Mod Form</span>
+            </button>
+          )}
 
           {/* If on Admin route and authenticated */}
           {isAdminRoute && isAdminAuthenticated && (
