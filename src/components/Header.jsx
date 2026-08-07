@@ -34,19 +34,18 @@ export default function Header({
             onNavigate(isAdminRoute ? "/administrator" : "/");
           }}
         >
-          <div style={{
-            width: 38,
-            height: 38,
-            borderRadius: 10,
-            background: 'linear-gradient(135deg, #FF007F, #FF2A85)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            boxShadow: '0 4px 15px rgba(255, 0, 127, 0.45)'
-          }}>
-            <ShieldCheck size={22} />
-          </div>
+          <img
+            src="/tab_photo.jpg"
+            alt="Stream Mods Logo"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid var(--color-pink)',
+              boxShadow: '0 0 12px rgba(255, 0, 127, 0.5)'
+            }}
+          />
           <div>
             <span>Stream Mods</span>
             <span style={{ fontSize: '0.8rem', display: 'block', color: 'var(--text-secondary)', fontWeight: 500, marginTop: -2 }}>
