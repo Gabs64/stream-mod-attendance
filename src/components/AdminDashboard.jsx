@@ -471,29 +471,32 @@ export default function AdminDashboard({
             <option value="Present">Present Only</option>
             <option value="Absent">Absent Only</option>
           </select>
-        </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           {selectedRecordIds.length > 0 && (
             <button
               className="btn-secondary"
               onClick={handlePurgeSelected}
               title="Purge selected attendance records"
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem',
+                gap: '0.45rem',
                 background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(225, 29, 72, 0.25))',
                 border: '1px solid rgba(239, 68, 68, 0.6)',
                 color: '#FDA4AF',
                 fontWeight: 700,
-                boxShadow: '0 0 14px rgba(239, 68, 68, 0.3)'
+                boxShadow: '0 0 14px rgba(239, 68, 68, 0.3)',
+                whiteSpace: 'nowrap',
+                animation: 'fadeIn 0.2s ease'
               }}
             >
               <Trash2 size={16} />
               <span>Purge Selected ({selectedRecordIds.length})</span>
             </button>
           )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'nowrap' }}>
 
           <button
             className="btn-secondary"
