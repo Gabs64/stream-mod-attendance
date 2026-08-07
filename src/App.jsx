@@ -29,12 +29,25 @@ export default function App() {
     setCurrentPath(path);
   };
 
-  // Load records and run background sync on startup
+  // Load records and set up cross-tab live storage sync listener
   useEffect(() => {
-    const loaded = getAttendanceRecords();
-    const safeLoaded = Array.isArray(loaded) ? loaded : [];
-    setRecords(safeLoaded);
+    const loadRecords = () => {
+      const loaded = getAttendanceRecords();
+      setRecords(Array.isArray(loaded) ? loaded : []);
+    };
 
+    loadRecords();
+
+    // Listen for storage changes across tabs/windows
+    const handleStorageChange = (e) => {
+      if (e.key === 'nini_streammod_attendance_records_v1' || !e.key) {
+        loadRecords();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Initial background cloud pull if connected
     const config = getSyncConfig();
     if (config.webAppUrl && config.isConnected) {
       pullRecordsFromSheet().then(sheetRecords => {
@@ -46,7 +59,30 @@ export default function App() {
         console.warn('Startup background Google Sheet sync failed:', err);
       });
     }
+
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  const handleRefreshRecords = async () => {
+    // 1. Load latest local storage records immediately
+    const loaded = getAttendanceRecords();
+    const safeLoaded = Array.isArray(loaded) ? loaded : [];
+    setRecords(safeLoaded);
+
+    // 2. If Google Sheet is connected, pull latest records from cloud
+    const config = getSyncConfig();
+    if (config.webAppUrl && config.isConnected) {
+      try {
+        const sheetRecords = await pullRecordsFromSheet();
+        if (Array.isArray(sheetRecords)) {
+          localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(sheetRecords));
+          setRecords(sheetRecords);
+        }
+      } catch (err) {
+        console.warn('Manual refresh Google Sheet pull failed:', err);
+      }
+    }
+  };
 
   const handleRecordSubmitted = (newRecordData) => {
     const saved = saveAttendanceRecord(newRecordData);
@@ -113,10 +149,7 @@ export default function App() {
               onDeleteRecord={handleDeleteRecord}
               onClearAll={handleClearAll}
               onRecordsUpdated={(updatedList) => setRecords(updatedList)}
-              onRefreshRecords={() => {
-                const loaded = getAttendanceRecords();
-                setRecords(Array.isArray(loaded) ? loaded : []);
-              }}
+              onRefreshRecords={handleRefreshRecords}
             />
           )}
         </ErrorBoundary>
