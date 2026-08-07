@@ -113,8 +113,6 @@ export default function App() {
               onDeleteRecord={handleDeleteRecord}
               onClearAll={handleClearAll}
               onRecordsUpdated={(updatedList) => setRecords(updatedList)}
-              isSheetsModalOpen={isSheetsModalOpen}
-              setIsSheetsModalOpen={setIsSheetsModalOpen}
             />
           )}
         </ErrorBoundary>

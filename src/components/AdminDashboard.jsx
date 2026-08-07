@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Download, Upload, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Copy, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid, Sheet } from 'lucide-react';
-import { exportToCSV, exportToExcel, copyTableToClipboard, importRecordsFromFile } from '../services/attendanceStorage';
-import { getSyncConfig } from '../services/googleSheetsService';
-import GoogleSheetsSyncModal from './GoogleSheetsSyncModal';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Download, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid } from 'lucide-react';
+import { exportToCSV, exportToExcel } from '../services/attendanceStorage';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -15,22 +13,12 @@ export default function AdminDashboard({
   records = [], 
   onDeleteRecord, 
   onClearAll, 
-  onRecordsUpdated,
-  isSheetsModalOpen: externalIsSheetsModalOpen,
-  setIsSheetsModalOpen: externalSetIsSheetsModalOpen 
+  onRecordsUpdated
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [copiedStatus, setCopiedStatus] = useState(false);
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
   const [importMessage, setImportMessage] = useState({ type: '', text: '' });
-  const [localIsSheetsModalOpen, setLocalIsSheetsModalOpen] = useState(false);
-  const fileInputRef = useRef(null);
-
-  const isSheetsModalOpen = externalIsSheetsModalOpen !== undefined ? externalIsSheetsModalOpen : localIsSheetsModalOpen;
-  const setIsSheetsModalOpen = externalSetIsSheetsModalOpen || setLocalIsSheetsModalOpen;
-
-  const syncConfig = useMemo(() => getSyncConfig(), [isSheetsModalOpen, records]);
 
   // Calendar State (Default to actual current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -575,13 +563,6 @@ export default function AdminDashboard({
           </table>
         )}
       </div>
-
-      <GoogleSheetsSyncModal
-        isOpen={isSheetsModalOpen}
-        onClose={() => setIsSheetsModalOpen(false)}
-        records={records}
-        onRecordsUpdated={onRecordsUpdated}
-      />
     </div>
   );
 }
