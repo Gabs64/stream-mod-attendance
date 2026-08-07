@@ -548,53 +548,50 @@ textarea.input-control {
 }
 
 .actions-bar {
-  display: flex;
+  display: flex !important;
   flex-wrap: nowrap !important;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: center !important;
+  gap: 0.5rem !important;
   margin-bottom: 1.5rem;
   width: 100%;
-}
-
-.search-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: nowrap !important;
-  flex: 1;
-  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
 .search-input-wrap {
   position: relative;
-  width: 200px;
-  flex-shrink: 0;
+  width: 180px;
+  flex-shrink: 0 !important;
 }
 
 .search-input-wrap .search-icon {
   position: absolute;
-  left: 1rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
 }
 
 .search-input-wrap input {
-  padding-left: 2.75rem;
+  padding-left: 2.25rem;
+  padding-right: 0.5rem;
+  font-size: 0.85rem;
+  height: 40px;
 }
 
 .select-control {
-  padding: 0.85rem 1rem;
+  padding: 0.5rem 0.75rem;
+  height: 40px;
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-primary);
   background: var(--bg-input);
   border: 1px solid var(--bg-card-border);
   border-radius: var(--radius-md);
   outline: none;
   cursor: pointer;
-  white-space: nowrap;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 /* Custom Checkbox Styling */

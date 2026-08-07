@@ -448,103 +448,98 @@ export default function AdminDashboard({
         </div>
       </div>
 
-      {/* Controls Bar: Search, Status Filter, Import, Export, Clear */}
+      {/* Controls Bar: Search, Status Filter, Purge, Refresh, Export */}
       <div className="actions-bar">
-        <div className="search-filter-group">
-          <div className="search-input-wrap">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              className="input-control"
-              placeholder="Search moderator..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <select
-            className="select-control"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="Present">Present Only</option>
-            <option value="Absent">Absent Only</option>
-          </select>
-
-          {selectedRecordIds.length > 0 && (
-            <button
-              className="btn-secondary"
-              onClick={handlePurgeSelected}
-              title="Purge selected attendance records"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(225, 29, 72, 0.25))',
-                border: '1px solid rgba(239, 68, 68, 0.6)',
-                color: '#FDA4AF',
-                fontWeight: 700,
-                boxShadow: '0 0 14px rgba(239, 68, 68, 0.3)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                animation: 'fadeIn 0.2s ease'
-              }}
-            >
-              <Trash2 size={16} />
-              <span>Purge Selected ({selectedRecordIds.length})</span>
-            </button>
-          )}
+        <div className="search-input-wrap">
+          <Search size={16} className="search-icon" />
+          <input
+            type="text"
+            className="input-control"
+            placeholder="Search moderator..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'nowrap' }}>
+        <select
+          className="select-control"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="Present">Present Only</option>
+          <option value="Absent">Absent Only</option>
+        </select>
 
+        {selectedRecordIds.length > 0 && (
           <button
             className="btn-secondary"
-            onClick={handleManualRefresh}
-            title="Refresh attendance records and daily rosters"
+            onClick={handlePurgeSelected}
+            title="Purge selected attendance records"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              background: 'rgba(255, 0, 127, 0.15)',
-              border: '1px solid rgba(255, 0, 127, 0.35)',
-              color: 'var(--text-primary)',
-              fontWeight: 700
+              gap: '0.4rem',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(225, 29, 72, 0.25))',
+              border: '1px solid rgba(239, 68, 68, 0.6)',
+              color: '#FDA4AF',
+              fontWeight: 700,
+              boxShadow: '0 0 14px rgba(239, 68, 68, 0.3)',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              animation: 'fadeIn 0.2s ease'
             }}
           >
-            <RefreshCw size={16} className={isRefreshing ? 'spin-icon' : ''} style={{ color: 'var(--color-pink)' }} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+            <Trash2 size={15} />
+            <span>Purge Selected ({selectedRecordIds.length})</span>
           </button>
+        )}
 
-          <button
-            className="btn-secondary"
-            onClick={() => exportToExcel(filteredRecords, selectedDate)}
-            title="Download Excel spreadsheet for selected day"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.2))',
-              border: '1px solid rgba(16, 185, 129, 0.5)',
-              color: '#34D399',
-              fontWeight: 700
-            }}
-          >
-            <Download size={16} />
-            <span>Download .xlsx</span>
-          </button>
+        <button
+          className="btn-secondary"
+          onClick={handleManualRefresh}
+          title="Refresh attendance records and daily rosters"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            background: 'rgba(255, 0, 127, 0.15)',
+            border: '1px solid rgba(255, 0, 127, 0.35)',
+            color: 'var(--text-primary)',
+            fontWeight: 700
+          }}
+        >
+          <RefreshCw size={15} className={isRefreshing ? 'spin-icon' : ''} style={{ color: 'var(--color-pink)' }} />
+          <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+        </button>
 
-          <button
-            className="btn-secondary"
-            onClick={() => exportToCSV(filteredRecords, selectedDate)}
-            title="Download CSV for selected day"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            <Download size={16} />
-            <span>CSV</span>
-          </button>
-        </div>
+        <button
+          className="btn-secondary"
+          onClick={() => exportToExcel(filteredRecords, selectedDate)}
+          title="Download Excel spreadsheet for selected day"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.2))',
+            border: '1px solid rgba(16, 185, 129, 0.5)',
+            color: '#34D399',
+            fontWeight: 700
+          }}
+        >
+          <Download size={15} />
+          <span>Download .xlsx</span>
+        </button>
+
+        <button
+          className="btn-secondary"
+          onClick={() => exportToCSV(filteredRecords, selectedDate)}
+          title="Download CSV for selected day"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+        >
+          <Download size={15} />
+          <span>CSV</span>
+        </button>
       </div>
 
       {/* Attendance Table */}
