@@ -2,21 +2,39 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import AttendanceForm from './components/AttendanceForm';
 import AdminDashboard from './components/AdminDashboard';
+import AdminLogin from './components/AdminLogin';
 import ErrorBoundary from './components/ErrorBoundary';
 import { getAttendanceRecords, saveAttendanceRecord, deleteAttendanceRecord, clearAllRecords } from './services/attendanceStorage';
 import { getSyncConfig, pullRecordsFromSheet } from './services/googleSheetsService';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('form'); // 'form' | 'admin'
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem('nini_admin_auth') === 'true';
+  });
   const [records, setRecords] = useState([]);
   const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
 
+  // Sync URL changes and browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleNavigate = (path) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path);
+  };
+
+  // Load records and run background sync on startup
   useEffect(() => {
     const loaded = getAttendanceRecords();
     const safeLoaded = Array.isArray(loaded) ? loaded : [];
     setRecords(safeLoaded);
 
-    // Auto-sync pull from Google Sheet on app startup (Google Sheet is Master source)
     const config = getSyncConfig();
     if (config.webAppUrl && config.isConnected) {
       pullRecordsFromSheet().then(sheetRecords => {
@@ -46,22 +64,35 @@ export default function App() {
   };
 
   const handleOpenSheetsSync = () => {
-    setActiveTab('admin');
     setIsSheetsModalOpen(true);
   };
+
+  const handleAdminLoginSuccess = () => {
+    sessionStorage.setItem('nini_admin_auth', 'true');
+    setIsAdminAuthenticated(true);
+  };
+
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem('nini_admin_auth');
+    setIsAdminAuthenticated(false);
+  };
+
+  const isAdminRoute = currentPath.toLowerCase().startsWith('/administrator') || currentPath.toLowerCase().startsWith('/admin');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        recordCount={records.length}
+        isAdminRoute={isAdminRoute}
+        isAdminAuthenticated={isAdminAuthenticated}
+        onLogout={handleAdminLogout}
         onOpenSheetsSync={handleOpenSheetsSync}
+        onNavigate={handleNavigate}
       />
 
       <main className="main-content">
         <ErrorBoundary>
-          {activeTab === 'form' ? (
+          {!isAdminRoute ? (
+            /* Stream Mods Public Interface (Form Only) */
             <div>
               <div className="page-header">
                 <h1 className="page-title">Livestream Moderator Attendance</h1>
@@ -72,7 +103,11 @@ export default function App() {
               
               <AttendanceForm onRecordSubmitted={handleRecordSubmitted} />
             </div>
+          ) : !isAdminAuthenticated ? (
+            /* Administrator Login Portal */
+            <AdminLogin onLoginSuccess={handleAdminLoginSuccess} />
           ) : (
+            /* Authenticated Administrator Dashboard */
             <AdminDashboard
               records={records}
               onDeleteRecord={handleDeleteRecord}
@@ -88,11 +123,13 @@ export default function App() {
       <footer className="footer">
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            © {new Date().getFullYear()} Stream Mods Attendance System • Built for TikTok & Twitch Moderators
+            © {new Date().getFullYear()} Stream Mods Attendance System • {isAdminRoute ? 'Administrator Portal' : 'Stream Moderator Portal'}
           </div>
           <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem' }}>
             <span style={{ color: 'var(--color-present)' }}>● System Active</span>
-            <span style={{ color: 'var(--text-secondary)' }}>FSD v1.0 Compliant</span>
+            <span style={{ color: 'var(--text-secondary)' }}>
+              {isAdminRoute ? 'Secure Admin Mode' : 'Moderator Mode'}
+            </span>
           </div>
         </div>
       </footer>

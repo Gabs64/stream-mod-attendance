@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, ClipboardList, LayoutDashboard, Clock, Sheet } from 'lucide-react';
+import { ShieldCheck, Clock, Sheet, LogOut, Lock } from 'lucide-react';
 import { getSyncConfig } from '../services/googleSheetsService';
 
-export default function Header({ activeTab, setActiveTab, recordCount, onOpenSheetsSync }) {
+export default function Header({
+  isAdminRoute,
+  isAdminAuthenticated,
+  onLogout,
+  onOpenSheetsSync,
+  onNavigate
+}) {
   const [liveTime, setLiveTime] = useState('');
   const [syncConfig, setSyncConfig] = useState(getSyncConfig());
 
@@ -17,11 +23,17 @@ export default function Header({ activeTab, setActiveTab, recordCount, onOpenShe
     return () => clearInterval(interval);
   }, []);
 
-
   return (
     <header className="navbar">
       <div className="navbar-container">
-        <a href="#" className="brand-logo" onClick={(e) => { e.preventDefault(); setActiveTab('form'); }}>
+        <a
+          href={isAdminRoute ? "/administrator" : "/"}
+          className="brand-logo"
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate(isAdminRoute ? "/administrator" : "/");
+          }}
+        >
           <div style={{
             width: 38,
             height: 38,
@@ -38,13 +50,17 @@ export default function Header({ activeTab, setActiveTab, recordCount, onOpenShe
           <div>
             <span>Stream Mods</span>
             <span style={{ fontSize: '0.8rem', display: 'block', color: 'var(--text-secondary)', fontWeight: 500, marginTop: -2 }}>
-              Attendance System
+              {isAdminRoute ? 'Admin Portal' : 'Attendance System'}
             </span>
           </div>
-          <span className="brand-badge">LIVE</span>
+          <span className="brand-badge" style={{
+            background: isAdminRoute ? 'linear-gradient(135deg, #FF007F, #EC4899)' : 'linear-gradient(135deg, #10B981, #059669)'
+          }}>
+            {isAdminRoute ? 'ADMIN' : 'MOD'}
+          </span>
         </a>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -62,47 +78,65 @@ export default function Header({ activeTab, setActiveTab, recordCount, onOpenShe
             </span>
           </div>
 
-          <button
-            className="header-sheets-btn"
-            onClick={onOpenSheetsSync}
-            title={syncConfig.isConnected ? "Google Sheet Sync Active" : "Click to Setup Google Sheet Sync"}
-          >
-            <Sheet size={15} color={syncConfig.isConnected ? "#10B981" : "#9CA3AF"} />
-            <span className="header-sheets-text">
-              {syncConfig.isConnected ? "Sheet Synced" : "Sheet Sync"}
-            </span>
-            <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
-          </button>
-
-          <nav className="nav-tabs">
-            <button
-              className={`nav-tab-btn ${activeTab === 'form' ? 'active' : ''}`}
-              onClick={() => setActiveTab('form')}
-            >
-              <ClipboardList size={16} />
-              <span>Submit Form</span>
-            </button>
-
-            <button
-              className={`nav-tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
-              onClick={() => setActiveTab('admin')}
-            >
-              <LayoutDashboard size={16} />
-              <span>Records & Stats</span>
-              {recordCount > 0 && (
-                <span style={{
-                  background: 'rgba(255, 0, 127, 0.5)',
-                  color: 'white',
-                  padding: '1px 6px',
-                  borderRadius: 10,
-                  fontSize: '0.75rem',
-                  fontWeight: 700
-                }}>
-                  {recordCount}
+          {/* If on Admin route and authenticated */}
+          {isAdminRoute && isAdminAuthenticated && (
+            <>
+              <button
+                className="header-sheets-btn"
+                onClick={onOpenSheetsSync}
+                title={syncConfig.isConnected ? "Google Sheet Sync Active" : "Click to Setup Google Sheet Sync"}
+              >
+                <Sheet size={15} color={syncConfig.isConnected ? "#10B981" : "#9CA3AF"} />
+                <span className="header-sheets-text">
+                  {syncConfig.isConnected ? "Sheet Synced" : "Sheet Sync"}
                 </span>
-              )}
+                <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
+              </button>
+
+              <button
+                onClick={onLogout}
+                className="btn-secondary"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.45rem 0.9rem',
+                  fontSize: '0.85rem',
+                  background: 'rgba(244, 63, 94, 0.12)',
+                  borderColor: 'rgba(244, 63, 94, 0.3)',
+                  color: '#FB7185'
+                }}
+                title="Log Out of Admin Portal"
+              >
+                <LogOut size={15} />
+                <span>Log Out</span>
+              </button>
+            </>
+          )}
+
+          {/* If on Stream Mod route, show subtle link to admin login */}
+          {!isAdminRoute && (
+            <button
+              onClick={() => onNavigate('/administrator')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.4rem 0.6rem',
+                borderRadius: 'var(--radius-sm)',
+                transition: 'var(--transition-fast)'
+              }}
+              title="Administrator Portal"
+            >
+              <Lock size={14} />
+              <span className="admin-link-text">Admin</span>
             </button>
-          </nav>
+          )}
         </div>
       </div>
     </header>
