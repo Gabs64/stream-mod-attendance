@@ -159,17 +159,9 @@ export default function App() {
         </ErrorBoundary>
       </main>
 
-      <footer className="footer">
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            © {new Date().getFullYear()} Stream Mods Attendance System • {isAdminRoute ? 'Administrator Portal' : 'Stream Moderator Portal'}
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem' }}>
-            <span style={{ color: 'var(--color-present)' }}>● System Active</span>
-            <span style={{ color: 'var(--text-secondary)' }}>
-              {isAdminRoute ? 'Secure Admin Mode' : 'Moderator Mode'}
-            </span>
-          </div>
+      <footer className="footer" style={{ padding: '1.5rem 1rem', textAlign: 'center', borderTop: '1px solid var(--bg-card-border)', background: 'rgba(10, 5, 20, 0.4)', backdropFilter: 'blur(10px)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.9rem', letterSpacing: '0.02em' }}>
+          ©Niniclou
         </div>
       </footer>
     </div>
