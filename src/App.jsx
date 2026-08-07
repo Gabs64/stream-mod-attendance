@@ -63,19 +63,16 @@ export default function App() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Live Auto-Refresh: Polls local attendance records every 2 seconds for real-time updates
+  // Live Auto-Refresh: Polls local attendance records every 1.5 seconds for real-time updates
   useEffect(() => {
-    const autoRefreshInterval = setInterval(() => {
+    const pollRecords = () => {
       const loaded = getAttendanceRecords();
-      const safeLoaded = Array.isArray(loaded) ? loaded : [];
-      setRecords((prev) => {
-        if (JSON.stringify(prev) !== JSON.stringify(safeLoaded)) {
-          return safeLoaded;
-        }
-        return prev;
-      });
-    }, 2000);
+      if (Array.isArray(loaded)) {
+        setRecords([...loaded]);
+      }
+    };
 
+    const autoRefreshInterval = setInterval(pollRecords, 1500);
     return () => clearInterval(autoRefreshInterval);
   }, []);
 
