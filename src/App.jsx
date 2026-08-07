@@ -116,7 +116,12 @@ export default function App() {
   const isAdminRoute = currentPath.toLowerCase().startsWith('/administrator') || currentPath.toLowerCase().startsWith('/admin');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="app-layout" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {/* Background Liquid Glowing Orbs */}
+      <div className="bg-liquid-orb orb-pink" />
+      <div className="bg-liquid-orb orb-cyan" />
+      <div className="bg-liquid-orb orb-purple" />
+
       <Header
         isAdminRoute={isAdminRoute}
         isAdminAuthenticated={isAdminAuthenticated}
