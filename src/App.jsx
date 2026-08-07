@@ -63,16 +63,47 @@ export default function App() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Live Auto-Refresh: Polls local attendance records every 1.5 seconds for real-time updates
+  // Live Auto-Refresh: Polls local storage & connected Google Sheet every 2 seconds for real-time live updates
   useEffect(() => {
-    const pollRecords = () => {
-      const loaded = getAttendanceRecords();
-      if (Array.isArray(loaded)) {
-        setRecords([...loaded]);
+    let isPolling = false;
+
+    const pollRecords = async () => {
+      if (isPolling) return;
+      isPolling = true;
+
+      try {
+        const local = getAttendanceRecords();
+        const safeLocal = Array.isArray(local) ? local : [];
+
+        const config = getSyncConfig();
+        if (config.webAppUrl && config.isConnected) {
+          try {
+            const sheetRecords = await pullRecordsFromSheet();
+            if (Array.isArray(sheetRecords) && sheetRecords.length > 0) {
+              const recordMap = new Map();
+              [...safeLocal, ...sheetRecords].forEach(r => {
+                if (r && r.id) recordMap.set(r.id, r);
+              });
+              const merged = Array.from(recordMap.values());
+              localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(merged));
+              setRecords(merged);
+              isPolling = false;
+              return;
+            }
+          } catch (cloudErr) {
+            // Cloud pull fallback to local
+          }
+        }
+
+        setRecords([...safeLocal]);
+      } catch (err) {
+        console.error('Error during live poll:', err);
+      } finally {
+        isPolling = false;
       }
     };
 
-    const autoRefreshInterval = setInterval(pollRecords, 1500);
+    const autoRefreshInterval = setInterval(pollRecords, 2000);
     return () => clearInterval(autoRefreshInterval);
   }, []);
 
