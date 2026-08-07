@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { appendRecordToSheet } from './googleSheetsService';
+import { appendRecordToSheet, deleteRecordFromSheet, pushRecordsToSheet } from './googleSheetsService';
 
 
 const STORAGE_KEY = 'nini_streammod_attendance_records_v1';
@@ -55,6 +55,12 @@ export const deleteAttendanceRecord = (id) => {
     const existing = getAttendanceRecords();
     const updated = existing.filter(rec => rec.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // Delete row from connected Google Sheet in background
+    deleteRecordFromSheet(id, updated).catch(err => {
+      console.warn('Background Google Sheets delete failed:', err);
+    });
+
     return updated;
   } catch (err) {
     console.error('Error deleting record:', err);
@@ -65,6 +71,12 @@ export const deleteAttendanceRecord = (id) => {
 export const clearAllRecords = () => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+
+    // Clear connected Google Sheet in background
+    pushRecordsToSheet([]).catch(err => {
+      console.warn('Background Google Sheets clear failed:', err);
+    });
+
     return [];
   } catch (err) {
     console.error('Error clearing records:', err);

@@ -225,10 +225,19 @@ function doPost(e) {
         sheet.getRange(2, 1, rows.length, 8).setValues(rows);
       }
       
+    if (action === 'DELETE') {
+      var targetId = contents.id;
+      var data = sheet.getDataRange().getValues();
+      var deletedCount = 0;
+      for (var i = data.length - 1; i >= 1; i--) {
+        if (String(data[i][0]) === String(targetId)) {
+          sheet.deleteRow(i + 1);
+          deletedCount++;
+        }
+      }
       return ContentService.createTextOutput(JSON.stringify({
         status: 'success',
-        message: records.length + ' attendance records pushed to sheet.',
-        syncedCount: records.length
+        message: 'Deleted ' + deletedCount + ' row(s) from sheet.'
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
@@ -365,5 +374,36 @@ export const pullRecordsFromSheet = async () => {
   } catch (err) {
     addSyncLog('PULL_ALL', `Pull failed: ${err.message}`, 'error');
     throw err;
+  }
+};
+
+export const deleteRecordFromSheet = async (id, updatedRecords) => {
+  const config = getSyncConfig();
+  if (!config.webAppUrl || !config.isConnected) {
+    return null;
+  }
+
+  try {
+    // 1. Send DELETE action for specific row ID
+    await sendToGoogleSheets(config.webAppUrl, {
+      action: 'DELETE',
+      id: id
+    });
+
+    // 2. Also push updated remaining records list to guarantee full sheet consistency
+    if (Array.isArray(updatedRecords)) {
+      await pushRecordsToSheet(updatedRecords);
+    }
+
+    addSyncLog('DELETE_RECORD', `Deleted record ${id} from Google Sheet`, 'success');
+  } catch (err) {
+    console.warn('Google Sheets delete failed, pushing updated dataset fallback:', err);
+    if (Array.isArray(updatedRecords)) {
+      try {
+        await pushRecordsToSheet(updatedRecords);
+      } catch (fallbackErr) {
+        console.error('Push fallback after delete failed:', fallbackErr);
+      }
+    }
   }
 };
