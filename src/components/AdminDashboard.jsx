@@ -574,7 +574,7 @@ export default function AdminDashboard({
         </button>
       </div>
 
-      {/* Attendance Table */}
+      {/* Attendance Records: Desktop Table & Mobile Cards */}
       <div className="table-container glass-panel">
         {filteredRecords.length === 0 ? (
           <div className="empty-state">
@@ -587,82 +587,139 @@ export default function AdminDashboard({
             </p>
           </div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: '42px', textAlign: 'center' }}>
+          <>
+            {/* Desktop Table View */}
+            <div className="desktop-table-view">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '42px', textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        className="custom-checkbox"
+                        checked={isAllSelected}
+                        onChange={handleToggleSelectAll}
+                        title={isAllSelected ? "Deselect All" : "Select All"}
+                      />
+                    </th>
+                    <th>Moderator</th>
+                    <th>Platforms</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Absence Reason</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRecords.map((rec) => {
+                    const isSelected = selectedRecordIds.includes(rec.id);
+                    return (
+                      <tr key={rec.id} style={{ background: isSelected ? 'rgba(255, 0, 127, 0.12)' : undefined }}>
+                        <td style={{ textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            className="custom-checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelectOne(rec.id)}
+                          />
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                            @{rec.twitchName}
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            ID: {rec.id}
+                          </div>
+                        </td>
+
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', fontSize: '0.85rem' }}>
+                            <span style={{ color: '#E2E8F0' }}>🎵 TikTok: <b>@{rec.tikTokName}</b></span>
+                            <span style={{ color: '#E2E8F0' }}>👾 Twitch: <b>@{rec.twitchName}</b></span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div style={{ fontWeight: 600, color: 'var(--color-tiktok-cyan)', fontFamily: 'monospace' }}>
+                            {formatDisplayTime(rec.time)}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            {rec.date}
+                          </div>
+                        </td>
+
+                        <td>
+                          <span className={`badge ${rec.status === 'Present' ? 'badge-present' : 'badge-absent'}`}>
+                            {rec.status === 'Present' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                            {rec.status}
+                          </span>
+                        </td>
+
+                        <td style={{ maxWidth: '240px' }}>
+                          {rec.status === 'Absent' && rec.reason ? (
+                            <span style={{ fontSize: '0.85rem', color: '#FDA4AF', fontStyle: 'italic' }}>
+                              "{rec.reason}"
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                          )}
+                        </td>
+
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            className="btn-icon"
+                            onClick={() => handleRequestDeleteSingle(rec)}
+                            title="Delete entry"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="mobile-cards-view">
+              <div className="mobile-select-all-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input
                     type="checkbox"
                     className="custom-checkbox"
                     checked={isAllSelected}
                     onChange={handleToggleSelectAll}
-                    title={isAllSelected ? "Deselect All" : "Select All"}
+                    id="mobile-select-all"
                   />
-                </th>
-                <th>Moderator</th>
-                <th>Platforms</th>
-                <th>Date & Time</th>
-                <th>Status</th>
-                <th>Absence Reason</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+                  <label htmlFor="mobile-select-all" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}>
+                    Select All ({filteredRecords.length})
+                  </label>
+                </div>
+              </div>
+
               {filteredRecords.map((rec) => {
                 const isSelected = selectedRecordIds.includes(rec.id);
                 return (
-                  <tr key={rec.id} style={{ background: isSelected ? 'rgba(255, 0, 127, 0.12)' : undefined }}>
-                    <td style={{ textAlign: 'center' }}>
-                      <input
-                        type="checkbox"
-                        className="custom-checkbox"
-                        checked={isSelected}
-                        onChange={() => handleToggleSelectOne(rec.id)}
-                      />
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        @{rec.twitchName}
+                  <div key={rec.id} className={`mobile-record-card ${isSelected ? 'selected' : ''}`}>
+                    <div className="mobile-card-top">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        <input
+                          type="checkbox"
+                          className="custom-checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleSelectOne(rec.id)}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>
+                            @{rec.twitchName}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            ID: {rec.id}
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                        ID: {rec.id}
-                      </div>
-                    </td>
 
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', fontSize: '0.85rem' }}>
-                        <span style={{ color: '#E2E8F0' }}>🎵 TikTok: <b>@{rec.tikTokName}</b></span>
-                        <span style={{ color: '#E2E8F0' }}>👾 Twitch: <b>@{rec.twitchName}</b></span>
-                      </div>
-                    </td>
-
-                    <td>
-                      <div style={{ fontWeight: 600, color: 'var(--color-tiktok-cyan)', fontFamily: 'monospace' }}>
-                        {formatDisplayTime(rec.time)}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        {rec.date}
-                      </div>
-                    </td>
-
-                    <td>
-                      <span className={`badge ${rec.status === 'Present' ? 'badge-present' : 'badge-absent'}`}>
-                        {rec.status === 'Present' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                        {rec.status}
-                      </span>
-                    </td>
-
-                    <td style={{ maxWidth: '240px' }}>
-                      {rec.status === 'Absent' && rec.reason ? (
-                        <span style={{ fontSize: '0.85rem', color: '#FDA4AF', fontStyle: 'italic' }}>
-                          "{rec.reason}"
-                        </span>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'right' }}>
                       <button
                         className="btn-icon"
                         onClick={() => handleRequestDeleteSingle(rec)}
@@ -670,12 +727,39 @@ export default function AdminDashboard({
                       >
                         <Trash2 size={16} />
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+
+                    <div className="mobile-card-details">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span className={`badge ${rec.status === 'Present' ? 'badge-present' : 'badge-absent'}`}>
+                          {rec.status === 'Present' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                          {rec.status}
+                        </span>
+                        <div style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-tiktok-cyan)', fontSize: '0.85rem' }}>
+                          {formatDisplayTime(rec.time)}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.8rem', color: '#E2E8F0', marginBottom: '0.5rem' }}>
+                        <span>🎵 TikTok: <b>@{rec.tikTokName}</b></span>
+                        <span>👾 Twitch: <b>@{rec.twitchName}</b></span>
+                      </div>
+
+                      {rec.status === 'Absent' && rec.reason && (
+                        <div style={{ fontSize: '0.8rem', color: '#FDA4AF', fontStyle: 'italic', marginBottom: '0.4rem', background: 'rgba(244, 63, 94, 0.08)', padding: '0.4rem 0.6rem', borderRadius: '6px' }}>
+                          "{rec.reason}"
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                        {rec.date}
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 
