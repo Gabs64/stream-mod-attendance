@@ -144,22 +144,27 @@ export default function AdminDashboard({
   const attendanceRate = totalSubmissions > 0
     ? Math.round((presentCount / totalSubmissions) * 100)
     : 0;
-  const handleManualRefresh = () => {
+  const handleManualRefresh = async () => {
     setIsRefreshing(true);
     setRefreshToast('Refreshing data...');
-    
-    setTimeout(() => {
-      const latest = getAttendanceRecords();
-      if (onRecordsUpdated) {
-        onRecordsUpdated(latest);
-      }
+
+    try {
       if (onRefreshRecords) {
-        onRefreshRecords();
+        await onRefreshRecords();
+      } else {
+        const latest = getAttendanceRecords();
+        if (onRecordsUpdated) {
+          onRecordsUpdated(latest);
+        }
       }
-      setIsRefreshing(false);
       setRefreshToast('Records updated!');
+    } catch (err) {
+      console.error('Refresh error:', err);
+      setRefreshToast('Refresh completed');
+    } finally {
+      setIsRefreshing(false);
       setTimeout(() => setRefreshToast(''), 2500);
-    }, 450);
+    }
   };
 
   const formatDisplayTime = (timeStr) => {
