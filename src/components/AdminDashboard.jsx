@@ -137,6 +137,9 @@ export default function AdminDashboard({
   const attendanceRate = totalSubmissions > 0
     ? Math.round((presentCount / totalSubmissions) * 100)
     : 0;
+  const todayStr = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }, []);
 
   return (
     <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
