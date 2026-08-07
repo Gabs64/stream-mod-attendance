@@ -446,26 +446,6 @@ export default function AdminDashboard({
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Google Sheets Sync Button */}
-          <button
-            className="btn-secondary"
-            onClick={() => setIsSheetsModalOpen(true)}
-            title="Configure real-time Google Sheets sync or push/pull data"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
-              border: '1px solid rgba(16, 185, 129, 0.5)',
-              color: '#34D399',
-              fontWeight: 700
-            }}
-          >
-            <Sheet size={16} color="#10B981" />
-            <span>Google Sheets Sync</span>
-            <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
-          </button>
-
           <button
             className="btn-secondary"
             onClick={() => exportToExcel(filteredRecords, selectedDate)}

@@ -103,38 +103,24 @@ export default function Header({
 
           {/* If on Admin route and authenticated */}
           {isAdminRoute && isAdminAuthenticated && (
-            <>
-              <button
-                className="header-sheets-btn"
-                onClick={onOpenSheetsSync}
-                title={syncConfig.isConnected ? "Google Sheet Sync Active" : "Click to Setup Google Sheet Sync"}
-              >
-                <Sheet size={15} color={syncConfig.isConnected ? "#10B981" : "#9CA3AF"} />
-                <span className="header-sheets-text">
-                  {syncConfig.isConnected ? "Sheet Synced" : "Sheet Sync"}
-                </span>
-                <span className={`sync-dot ${syncConfig.isConnected ? 'connected' : 'disconnected'}`}></span>
-              </button>
-
-              <button
-                onClick={onLogout}
-                className="btn-secondary"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.45rem 0.9rem',
-                  fontSize: '0.85rem',
-                  background: 'rgba(244, 63, 94, 0.12)',
-                  borderColor: 'rgba(244, 63, 94, 0.3)',
-                  color: '#FB7185'
-                }}
-                title="Log Out of Admin Portal"
-              >
-                <LogOut size={15} />
-                <span>Log Out</span>
-              </button>
-            </>
+            <button
+              onClick={onLogout}
+              className="btn-secondary"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.45rem 0.9rem',
+                fontSize: '0.85rem',
+                background: 'rgba(244, 63, 94, 0.12)',
+                borderColor: 'rgba(244, 63, 94, 0.3)',
+                color: '#FB7185'
+              }}
+              title="Log Out of Admin Portal"
+            >
+              <LogOut size={15} />
+              <span>Log Out</span>
+            </button>
           )}
 
           {/* If on Stream Mod route, show subtle link to admin login */}
