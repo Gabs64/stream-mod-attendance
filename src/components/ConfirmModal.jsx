@@ -27,6 +27,7 @@ export default function ConfirmModal({
 
         {/* Close Button */}
         <button
+          className="liquid-close-btn"
           onClick={onCancel}
           style={{
             position: 'absolute',
@@ -41,7 +42,6 @@ export default function ConfirmModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.2s ease',
             zIndex: 2
           }}
         >
@@ -51,6 +51,7 @@ export default function ConfirmModal({
         {/* Header Icon + Title & Message */}
         <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'flex-start', gap: '1.1rem', marginBottom: '1.25rem' }}>
           <div
+            className="liquid-icon-badge"
             style={{
               width: '50px',
               height: '50px',

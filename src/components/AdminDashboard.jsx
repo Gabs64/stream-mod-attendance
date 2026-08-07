@@ -10,11 +10,11 @@ const MONTH_NAMES = [
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export default function AdminDashboard({ 
-  records = [], 
-  onDeleteRecord, 
+export default function AdminDashboard({
+  records = [],
+  onDeleteRecord,
   onBulkDeleteRecords,
-  onClearAll, 
+  onClearAll,
   onRecordsUpdated,
   onRefreshRecords
 }) {
@@ -295,7 +295,7 @@ export default function AdminDashboard({
         <div>
           <h2 className="page-title" style={{ fontSize: '1.85rem' }}>Attendance Calendar & Records</h2>
           <p className="page-subtitle" style={{ margin: 0 }}>
-            Interactive daily calendar for stream moderator attendance tracking and file import/export.
+            Interactive daily calendar for stream moderator attendance tracking.
           </p>
         </div>
 
@@ -629,51 +629,51 @@ export default function AdminDashboard({
                       </div>
                     </td>
 
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', fontSize: '0.85rem' }}>
-                      <span style={{ color: '#E2E8F0' }}>🎵 TikTok: <b>@{rec.tikTokName}</b></span>
-                      <span style={{ color: '#E2E8F0' }}>👾 Twitch: <b>@{rec.twitchName}</b></span>
-                    </div>
-                  </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', fontSize: '0.85rem' }}>
+                        <span style={{ color: '#E2E8F0' }}>🎵 TikTok: <b>@{rec.tikTokName}</b></span>
+                        <span style={{ color: '#E2E8F0' }}>👾 Twitch: <b>@{rec.twitchName}</b></span>
+                      </div>
+                    </td>
 
-                  <td>
-                    <div style={{ fontWeight: 600, color: 'var(--color-tiktok-cyan)', fontFamily: 'monospace' }}>
-                      {formatDisplayTime(rec.time)}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {rec.date}
-                    </div>
-                  </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: 'var(--color-tiktok-cyan)', fontFamily: 'monospace' }}>
+                        {formatDisplayTime(rec.time)}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {rec.date}
+                      </div>
+                    </td>
 
-                  <td>
-                    <span className={`badge ${rec.status === 'Present' ? 'badge-present' : 'badge-absent'}`}>
-                      {rec.status === 'Present' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                      {rec.status}
-                    </span>
-                  </td>
-
-                  <td style={{ maxWidth: '240px' }}>
-                    {rec.status === 'Absent' && rec.reason ? (
-                      <span style={{ fontSize: '0.85rem', color: '#FDA4AF', fontStyle: 'italic' }}>
-                        "{rec.reason}"
+                    <td>
+                      <span className={`badge ${rec.status === 'Present' ? 'badge-present' : 'badge-absent'}`}>
+                        {rec.status === 'Present' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                        {rec.status}
                       </span>
-                    ) : (
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
-                    )}
-                  </td>
+                    </td>
 
-                  <td style={{ textAlign: 'right' }}>
-                    <button
-                      className="btn-icon"
-                      onClick={() => handleRequestDeleteSingle(rec)}
-                      title="Delete entry"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+                    <td style={{ maxWidth: '240px' }}>
+                      {rec.status === 'Absent' && rec.reason ? (
+                        <span style={{ fontSize: '0.85rem', color: '#FDA4AF', fontStyle: 'italic' }}>
+                          "{rec.reason}"
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                      )}
+                    </td>
+
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        className="btn-icon"
+                        onClick={() => handleRequestDeleteSingle(rec)}
+                        title="Delete entry"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
