@@ -540,21 +540,6 @@ export default function AdminDashboard({
             <Download size={16} />
             <span>CSV</span>
           </button>
-
-          {records.length > 0 && (
-            <button
-              className="btn-secondary"
-              onClick={() => {
-                if (window.confirm('Are you sure you want to clear all attendance records?')) {
-                  onClearAll();
-                }
-              }}
-              style={{ color: '#FB7185', borderColor: 'rgba(244, 63, 94, 0.2)' }}
-              title="Clear all records"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
         </div>
       </div>
 
@@ -577,10 +562,10 @@ export default function AdminDashboard({
                 <th style={{ width: '42px', textAlign: 'center' }}>
                   <input
                     type="checkbox"
+                    className="custom-checkbox"
                     checked={isAllSelected}
                     onChange={handleToggleSelectAll}
                     title={isAllSelected ? "Deselect All" : "Select All"}
-                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-pink)' }}
                   />
                 </th>
                 <th>Moderator</th>
@@ -599,9 +584,9 @@ export default function AdminDashboard({
                     <td style={{ textAlign: 'center' }}>
                       <input
                         type="checkbox"
+                        className="custom-checkbox"
                         checked={isSelected}
                         onChange={() => handleToggleSelectOne(rec.id)}
-                        style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--color-pink)' }}
                       />
                     </td>
                     <td>

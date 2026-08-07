@@ -556,16 +556,14 @@ textarea.input-control {
 
 .search-filter-group {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  flex: 1;
+  flex-wrap: nowrap;
 }
 
 .search-input-wrap {
   position: relative;
-  min-width: 240px;
-  flex: 1;
+  width: 280px;
 }
 
 .search-input-wrap .search-icon {
@@ -590,6 +588,47 @@ textarea.input-control {
   border-radius: var(--radius-md);
   outline: none;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Custom Checkbox Styling */
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.custom-checkbox:hover {
+  border-color: var(--color-pink);
+  box-shadow: 0 0 8px rgba(255, 0, 127, 0.4);
+}
+
+.custom-checkbox:checked {
+  background: var(--color-pink);
+  border-color: var(--color-pink);
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.6);
+}
+
+.custom-checkbox:checked::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 1px;
 }
 
 /* Table styling */
