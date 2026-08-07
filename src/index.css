@@ -1240,3 +1240,164 @@ input:checked + .toggle-slider:before {
   to { transform: rotate(360deg); }
 }
 
+/* Liquid Glass Modal Styling */
+.liquid-glass-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(8, 4, 15, 0.72);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 0, 127, 0.05) 40%, rgba(18, 10, 28, 0.92)),
+              radial-gradient(circle at 10% 10%, rgba(255, 0, 127, 0.2), transparent 60%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.45);
+  border-left-color: rgba(255, 255, 255, 0.35);
+  border-radius: 24px;
+  padding: 1.85rem;
+  box-shadow:
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 3px 0 rgba(0, 0, 0, 0.6),
+    0 25px 50px -12px rgba(0, 0, 0, 0.85),
+    0 0 35px rgba(255, 0, 127, 0.25);
+  overflow: hidden;
+  animation: liquidPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.liquid-glass-card.danger-card {
+  border-color: rgba(255, 0, 127, 0.5);
+  border-top-color: rgba(255, 105, 180, 0.7);
+  box-shadow:
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 3px 0 rgba(0, 0, 0, 0.7),
+    0 25px 55px -12px rgba(0, 0, 0, 0.9),
+    0 0 45px rgba(255, 0, 127, 0.4);
+}
+
+/* Liquid Sheen Reflection Line */
+.liquid-glass-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.08) 55%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: liquidSheen 6s infinite ease-in-out;
+}
+
+@keyframes liquidSheen {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(25deg); }
+  50%, 100% { transform: translateX(100%) translateY(100%) rotate(25deg); }
+}
+
+@keyframes liquidPop {
+  0% { transform: scale(0.85) translateY(15px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Ambient Liquid Orbs */
+.liquid-orb-1 {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 0, 127, 0.4), transparent 70%);
+  filter: blur(25px);
+  pointer-events: none;
+  animation: liquidPulse 4s ease-in-out infinite alternate;
+}
+
+.liquid-orb-2 {
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.3), transparent 70%);
+  filter: blur(30px);
+  pointer-events: none;
+  animation: liquidPulse 5s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes liquidPulse {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.3) translate(10px, -10px); }
+}
+
+/* Liquid Pill Button */
+.btn-liquid-cancel {
+  padding: 0.65rem 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-liquid-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.btn-liquid-confirm {
+  padding: 0.65rem 1.4rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: white;
+  background: linear-gradient(135deg, #FF007F, #D90429);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    0 0 20px rgba(255, 0, 127, 0.5),
+    0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-liquid-confirm:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    0 0 28px rgba(255, 0, 127, 0.75),
+    0 6px 18px rgba(0, 0, 0, 0.5);
+}
+

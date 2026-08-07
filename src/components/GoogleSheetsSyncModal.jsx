@@ -8,6 +8,7 @@ import {
   getSyncConfig, saveSyncConfig, getSyncLogs, getAppsScriptTemplate,
   testConnection, pushRecordsToSheet, pullRecordsFromSheet 
 } from '../services/googleSheetsService';
+import ConfirmModal from './ConfirmModal';
 
 export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onRecordsUpdated }) {
   const [activeTab, setActiveTab] = useState('actions'); // 'actions' | 'config' | 'setup' | 'logs'
@@ -18,6 +19,7 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
   const [isSyncing, setIsSyncing] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
   const [logs, setLogs] = useState([]);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
   useEffect(() => {
     if (isOpen) {
@@ -169,31 +171,38 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
     }
   };
 
-  const handleStrictReplaceFromSheet = async () => {
-    if (!window.confirm('Strict Mode: Replace local attendance database strictly with whatever is in the Google Sheet?')) {
-      return;
-    }
-    setIsSyncing(true);
-    setStatusMessage({ type: 'info', text: 'Fetching Google Sheet rows to strictly replace local database...' });
+  const handleStrictReplaceFromSheet = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Strict Database Mirror?",
+      message: "Are you sure you want to strictly replace your local attendance database with whatever is in the Google Sheet? Any local entries not in Google Sheets will be overwritten.",
+      confirmText: "Overwrite & Mirror",
+      type: "warning",
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        setIsSyncing(true);
+        setStatusMessage({ type: 'info', text: 'Fetching Google Sheet rows to strictly replace local database...' });
 
-    try {
-      const sheetRecords = await pullRecordsFromSheet();
-      setLogs(getSyncLogs());
+        try {
+          const sheetRecords = await pullRecordsFromSheet();
+          setLogs(getSyncLogs());
 
-      // Replace local storage with strictly sheet records
-      localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(sheetRecords));
-      if (onRecordsUpdated) onRecordsUpdated(sheetRecords);
-      setConfig(getSyncConfig());
+          // Replace local storage with strictly sheet records
+          localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(sheetRecords));
+          if (onRecordsUpdated) onRecordsUpdated(sheetRecords);
+          setConfig(getSyncConfig());
 
-      setStatusMessage({ 
-        type: 'success', 
-        text: `Database Mirror Complete! Local database strictly matches Google Sheet (${sheetRecords.length} records).` 
-      });
-    } catch (err) {
-      setStatusMessage({ type: 'error', text: `Strict replacement failed: ${err.message}` });
-    } finally {
-      setIsSyncing(false);
-    }
+          setStatusMessage({ 
+            type: 'success', 
+            text: `Database Mirror Complete! Local database strictly matches Google Sheet (${sheetRecords.length} records).` 
+          });
+        } catch (err) {
+          setStatusMessage({ type: 'error', text: `Strict replacement failed: ${err.message}` });
+        } finally {
+          setIsSyncing(false);
+        }
+      }
+    });
   };
 
   return (
@@ -549,6 +558,16 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
         )}
 
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        type={confirmModal.type || 'warning'}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

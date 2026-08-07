@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Download, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid, RefreshCw } from 'lucide-react';
 import { exportToCSV, exportToExcel, getAttendanceRecords } from '../services/attendanceStorage';
+import ConfirmModal from './ConfirmModal';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -23,6 +24,14 @@ export default function AdminDashboard({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshToast, setRefreshToast] = useState('');
   const [selectedRecordIds, setSelectedRecordIds] = useState([]);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    type: 'danger',
+    onConfirm: null
+  });
 
   // Calendar State (Default to actual current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -193,32 +202,55 @@ export default function AdminDashboard({
     });
   };
 
-  const handlePurgeSelected = async () => {
+  const handlePurgeSelected = () => {
     const count = selectedRecordIds.length;
     if (count === 0) return;
 
-    if (window.confirm(`Are you sure you want to permanently purge ${count} selected record(s)? This will also delete their rows from Google Sheets.`)) {
-      setIsRefreshing(true);
-      setRefreshToast(`Purging ${count} record(s)...`);
+    setConfirmModal({
+      isOpen: true,
+      title: `Purge ${count} Selected Record${count > 1 ? 's' : ''}?`,
+      message: `Are you sure you want to permanently purge ${count} selected attendance record${count > 1 ? 's' : ''}? This will also delete their rows from Google Sheets.`,
+      confirmText: `Purge ${count} Record${count > 1 ? 's' : ''}`,
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        setIsRefreshing(true);
+        setRefreshToast(`Purging ${count} record(s)...`);
 
-      try {
-        if (onBulkDeleteRecords) {
-          await onBulkDeleteRecords(selectedRecordIds);
-        } else {
-          for (const id of selectedRecordIds) {
-            onDeleteRecord(id);
+        try {
+          if (onBulkDeleteRecords) {
+            await onBulkDeleteRecords(selectedRecordIds);
+          } else {
+            for (const id of selectedRecordIds) {
+              await onDeleteRecord(id);
+            }
           }
+          setSelectedRecordIds([]);
+          setRefreshToast(`Successfully purged ${count} record(s)!`);
+        } catch (err) {
+          console.error('Purge error:', err);
+          setRefreshToast('Purge complete');
+        } finally {
+          setIsRefreshing(false);
+          setTimeout(() => setRefreshToast(''), 3000);
         }
-        setSelectedRecordIds([]);
-        setRefreshToast(`Successfully purged ${count} record(s)!`);
-      } catch (err) {
-        console.error('Purge error:', err);
-        setRefreshToast('Purge complete');
-      } finally {
-        setIsRefreshing(false);
-        setTimeout(() => setRefreshToast(''), 3000);
       }
-    }
+    });
+  };
+
+  const handleRequestDeleteSingle = (rec) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Delete Record for @${rec.twitchName}?`,
+      message: `Are you sure you want to delete this attendance entry for @${rec.twitchName} on ${rec.date}? This will also delete the row from Google Sheets.`,
+      confirmText: "Delete Entry",
+      type: 'danger',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await onDeleteRecord(rec.id);
+        setSelectedRecordIds(prev => prev.filter(id => id !== rec.id));
+      }
+    });
   };
 
   const formatDisplayTime = (timeStr) => {
@@ -633,7 +665,7 @@ export default function AdminDashboard({
                   <td style={{ textAlign: 'right' }}>
                     <button
                       className="btn-icon"
-                      onClick={() => onDeleteRecord(rec.id)}
+                      onClick={() => handleRequestDeleteSingle(rec)}
                       title="Delete entry"
                     >
                       <Trash2 size={16} />
@@ -646,6 +678,17 @@ export default function AdminDashboard({
           </table>
         )}
       </div>
+
+      {/* Custom Themed Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        type={confirmModal.type}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
