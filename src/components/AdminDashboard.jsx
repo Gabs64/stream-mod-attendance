@@ -18,7 +18,6 @@ export default function AdminDashboard({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' | 'table'
-  const [importMessage, setImportMessage] = useState({ type: '', text: '' });
 
   // Calendar State (Default to actual current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -139,73 +138,8 @@ export default function AdminDashboard({
     ? Math.round((presentCount / totalSubmissions) * 100)
     : 0;
 
-  const handleCopyClipboard = () => {
-    const success = copyTableToClipboard(filteredRecords);
-    if (success) {
-      setCopiedStatus(true);
-      setTimeout(() => setCopiedStatus(false), 2500);
-    }
-  };
-
-  const handleImportClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      setImportMessage({ type: 'info', text: 'Parsing attendance file...' });
-      const result = await importRecordsFromFile(file, selectedDate);
-
-      setImportMessage({
-        type: 'success',
-        text: `Successfully imported ${result.importedCount} new attendance record(s) from ${file.name}!`
-      });
-
-      if (onRecordsUpdated) {
-        onRecordsUpdated(result.allRecords);
-      }
-
-      // Automatically select and highlight the imported date on the calendar
-      if (result.lastImportedDate) {
-        setSelectedDate(result.lastImportedDate);
-        const parsedDate = new Date(result.lastImportedDate);
-        if (!isNaN(parsedDate.getTime())) {
-          setCurrentDate(parsedDate);
-        }
-      }
-
-      setTimeout(() => setImportMessage({ type: '', text: '' }), 4500);
-    } catch (err) {
-      setImportMessage({
-        type: 'error',
-        text: err.message || 'Failed to import file. Make sure it is a valid Excel or CSV file.'
-      });
-    }
-
-    // Reset file input
-    e.target.value = '';
-  };
-
-  const todayStr = useMemo(() => {
-    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  }, []);
-
   return (
     <div style={{ maxWidth: '1050px', margin: '0 auto' }}>
-      {/* Hidden File Input for Import */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept=".xlsx, .xls, .csv"
-        onChange={handleFileChange}
-        style={{ display: 'none' }}
-      />
-
       <div className="page-header" style={{ marginBottom: '1.5rem', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2 className="page-title" style={{ fontSize: '1.85rem' }}>Attendance Calendar & Records</h2>
@@ -234,19 +168,6 @@ export default function AdminDashboard({
           </button>
         </div>
       </div>
-
-      {/* Import Notification Banner */}
-      {importMessage.text && (
-        <div className={`error-banner`} style={{
-          background: importMessage.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-          borderColor: importMessage.type === 'success' ? 'var(--color-present)' : 'var(--color-absent)',
-          color: importMessage.type === 'success' ? '#34D399' : '#FB7185',
-          animation: 'none'
-        }}>
-          {importMessage.type === 'success' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-          <span>{importMessage.text}</span>
-        </div>
-      )}
 
       {/* Calendar Component Grid */}
       {viewMode === 'calendar' && (
@@ -339,7 +260,7 @@ export default function AdminDashboard({
       {/* Selected Date Header & Analytics Cards */}
       <div style={{
         display: 'flex',
-        justify: 'space-between',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '1rem',
         background: 'rgba(255, 0, 127, 0.12)',
