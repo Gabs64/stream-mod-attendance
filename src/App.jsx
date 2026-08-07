@@ -63,9 +63,25 @@ export default function App() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Live Auto-Refresh: Polls local storage & connected Google Sheet every 2 seconds for real-time live updates
+  // Smart Glitch-Free Auto-Refresh: Only updates React state when data actually changes
   useEffect(() => {
     let isPolling = false;
+
+    const areListsEqual = (listA, listB) => {
+      if (!Array.isArray(listA) || !Array.isArray(listB)) return false;
+      if (listA.length !== listB.length) return false;
+      for (let i = 0; i < listA.length; i++) {
+        if (
+          listA[i]?.id !== listB[i]?.id ||
+          listA[i]?.status !== listB[i]?.status ||
+          listA[i]?.date !== listB[i]?.date ||
+          listA[i]?.time !== listB[i]?.time
+        ) {
+          return false;
+        }
+      }
+      return true;
+    };
 
     const pollRecords = async () => {
       if (isPolling) return;
@@ -86,16 +102,26 @@ export default function App() {
               });
               const merged = Array.from(recordMap.values());
               localStorage.setItem('nini_streammod_attendance_records_v1', JSON.stringify(merged));
-              setRecords(merged);
-              isPolling = false;
+              
+              setRecords((prev) => {
+                if (!areListsEqual(prev, merged)) {
+                  return merged;
+                }
+                return prev;
+              });
               return;
             }
           } catch (cloudErr) {
-            // Cloud pull fallback to local
+            // Fallback to local
           }
         }
 
-        setRecords([...safeLocal]);
+        setRecords((prev) => {
+          if (!areListsEqual(prev, safeLocal)) {
+            return safeLocal;
+          }
+          return prev;
+        });
       } catch (err) {
         console.error('Error during live poll:', err);
       } finally {
@@ -103,7 +129,7 @@ export default function App() {
       }
     };
 
-    const autoRefreshInterval = setInterval(pollRecords, 2000);
+    const autoRefreshInterval = setInterval(pollRecords, 3000);
     return () => clearInterval(autoRefreshInterval);
   }, []);
 
