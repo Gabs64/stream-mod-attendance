@@ -25,6 +25,10 @@ export default function AdminDashboard({
   // Calendar State (Default to actual current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
 
+  const todayStr = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }, []);
+
   // Extract unique dates from records
   const availableDates = useMemo(() => {
     return Array.from(new Set((records || []).map(r => r.date).filter(Boolean)));
