@@ -636,13 +636,13 @@ textarea.input-control {
 }
 
 .actions-bar {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   padding-bottom: 4px;
 }
 
@@ -724,16 +724,18 @@ textarea.input-control {
 
 /* Table styling */
 .table-container {
-  overflow-x: auto;
+  overflow-x: hidden;
   border-radius: var(--radius-md);
   border: 1px solid var(--bg-card-border);
+  width: 100%;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  table-layout: fixed;
 }
 
 .data-table th {
@@ -741,15 +743,19 @@ textarea.input-control {
   font-family: var(--font-heading);
   font-weight: 700;
   color: var(--text-secondary);
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 0.65rem;
   border-bottom: 1px solid var(--bg-card-border);
   white-space: nowrap;
 }
 
 .data-table td {
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 0.65rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  vertical-align: middle;
 }
 
 .data-table tbody tr:hover {
@@ -1648,7 +1654,7 @@ input:checked + .toggle-slider:before {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 850px) {
   .desktop-table-view {
     display: none;
   }

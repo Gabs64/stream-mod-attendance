@@ -621,7 +621,7 @@ export default function AdminDashboard({
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '42px', textAlign: 'center' }}>
+                    <th style={{ width: '40px', textAlign: 'center' }}>
                       <input
                         type="checkbox"
                         className="custom-checkbox"
@@ -630,12 +630,12 @@ export default function AdminDashboard({
                         title={isAllSelected ? "Deselect All" : "Select All"}
                       />
                     </th>
-                    <th>Moderator</th>
-                    <th>Platforms</th>
-                    <th>Date & Time</th>
-                    <th>Status</th>
-                    <th>Absence Reason</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
+                    <th style={{ width: '18%' }}>Moderator</th>
+                    <th style={{ width: '22%' }}>Platforms</th>
+                    <th style={{ width: '18%' }}>Date & Time</th>
+                    <th style={{ width: '13%' }}>Status</th>
+                    <th style={{ width: '24%' }}>Absence Reason</th>
+                    <th style={{ width: '50px', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -655,7 +655,7 @@ export default function AdminDashboard({
                           <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
                             @{rec.twitchName}
                           </div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>
                             ID: {rec.id}
                           </div>
                         </td>
@@ -683,7 +683,7 @@ export default function AdminDashboard({
                           </span>
                         </td>
 
-                        <td style={{ maxWidth: '240px' }}>
+                        <td style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {rec.status === 'Absent' && rec.reason ? (
                             <span style={{ fontSize: '0.85rem', color: '#FDA4AF', fontStyle: 'italic' }}>
                               "{rec.reason}"
