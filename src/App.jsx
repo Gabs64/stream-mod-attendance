@@ -134,14 +134,7 @@ export default function App() {
         <ErrorBoundary>
           {!isAdminRoute ? (
             /* Stream Mods Public Interface (Form Only) */
-            <div>
-              <div className="page-header">
-                <h1 className="page-title">Livestream Moderator Attendance</h1>
-                <p className="page-subtitle">
-                  Quickly record your attendance status for upcoming streams. Automatic timestamps are populated for accuracy.
-                </p>
-              </div>
-
+            <div style={{ paddingTop: '1rem' }}>
               <AttendanceForm onRecordSubmitted={handleRecordSubmitted} />
             </div>
           ) : !isAdminAuthenticated ? (
@@ -164,9 +157,9 @@ export default function App() {
         </ErrorBoundary>
       </main>
 
-      <footer className="footer" style={{ padding: '1.5rem 1rem', textAlign: 'center', borderTop: '1px solid var(--bg-card-border)', background: 'rgba(10, 5, 20, 0.4)', backdropFilter: 'blur(10px)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center', fontWeight: 600, color: 'var(--text-secondary)', fontSize: '0.9rem', letterSpacing: '0.02em' }}>
-          ©Niniclou
+      <footer className="liquid-footer">
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center', fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem', letterSpacing: '0.04em' }}>
+          ©niniclou
         </div>
       </footer>
     </div>
