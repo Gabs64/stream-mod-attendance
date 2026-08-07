@@ -631,11 +631,11 @@ export default function AdminDashboard({
                       />
                     </th>
                     <th style={{ width: '18%' }}>Moderator</th>
-                    <th style={{ width: '22%' }}>Platforms</th>
-                    <th style={{ width: '18%' }}>Date & Time</th>
+                    <th style={{ width: '21%' }}>Platforms</th>
+                    <th style={{ width: '17%' }}>Date & Time</th>
                     <th style={{ width: '13%' }}>Status</th>
                     <th style={{ width: '24%' }}>Absence Reason</th>
-                    <th style={{ width: '50px', textAlign: 'right' }}>Actions</th>
+                    <th style={{ width: '85px', textAlign: 'center' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -693,7 +693,7 @@ export default function AdminDashboard({
                           )}
                         </td>
 
-                        <td style={{ textAlign: 'right' }}>
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             className="btn-icon"
                             onClick={() => handleRequestDeleteSingle(rec)}

@@ -758,6 +758,16 @@ textarea.input-control {
   vertical-align: middle;
 }
 
+.data-table th:first-child,
+.data-table td:first-child {
+  padding-left: 1rem;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  padding-right: 1.25rem;
+}
+
 .data-table tbody tr:hover {
   background: rgba(255, 105, 180, 0.03);
 }
