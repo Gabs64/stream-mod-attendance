@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Download, Trash2, CheckCircle2, XCircle, Users, Percent, Filter, Check, Calendar as CalendarIcon, ChevronLeft, ChevronRight, List, LayoutGrid, RefreshCw } from 'lucide-react';
 import { exportToCSV, exportToExcel, getAttendanceRecords } from '../services/attendanceStorage';
+import { normalizeTimeString } from '../services/googleSheetsService';
 import ConfirmModal from './ConfirmModal';
 
 const MONTH_NAMES = [
@@ -254,42 +255,7 @@ export default function AdminDashboard({
   };
 
   const formatDisplayTime = (timeStr) => {
-    if (!timeStr) return '';
-    const str = String(timeStr).trim();
-
-    // If already contains AM or PM
-    if (str.toLowerCase().includes('am') || str.toLowerCase().includes('pm')) {
-      return str;
-    }
-
-    // Handle full date strings or ISO strings
-    if (str.includes('GMT') || str.includes('T') || str.length > 20) {
-      const d = new Date(str);
-      if (!isNaN(d.getTime())) {
-        return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-      }
-    }
-
-    // Handle 24-hour "HH:MM" or "HH:MM:SS" time strings
-    if (str.includes(':')) {
-      const parts = str.split(':');
-      let hours = parseInt(parts[0], 10);
-      const minutes = parts[1] ? parts[1].padStart(2, '0') : '00';
-      const seconds = parts[2] ? parts[2].padStart(2, '0') : null;
-
-      if (!isNaN(hours)) {
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        const formattedHours = String(hours).padStart(2, '0');
-
-        return seconds
-          ? `${formattedHours}:${minutes}:${seconds} ${ampm}`
-          : `${formattedHours}:${minutes} ${ampm}`;
-      }
-    }
-
-    return str;
+    return normalizeTimeString(timeStr);
   };
 
   return (

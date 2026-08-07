@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { appendRecordToSheet, deleteRecordFromSheet, pushRecordsToSheet } from './googleSheetsService';
+import { appendRecordToSheet, deleteRecordFromSheet, pushRecordsToSheet, normalizeTimeString } from './googleSheetsService';
 
 
 const STORAGE_KEY = 'nini_streammod_attendance_records_v1';
@@ -15,8 +15,15 @@ export const getAttendanceRecords = () => {
     }
     const parsed = JSON.parse(data);
     const list = Array.isArray(parsed) ? parsed : [];
-    // Automatically purge old demo seed records (att-1001, att-1002, att-1003)
-    const cleanList = list.filter(r => r && !['att-1001', 'att-1002', 'att-1003'].includes(r.id));
+    // Automatically purge old demo seed records (att-1001, att-1002, att-1003) & normalize time strings
+    const cleanList = list.map(r => {
+      if (!r) return r;
+      return {
+        ...r,
+        time: normalizeTimeString(r.time || '12:00:00 PM')
+      };
+    }).filter(r => r && !['att-1001', 'att-1002', 'att-1003'].includes(r.id));
+
     if (cleanList.length !== list.length) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanList));
     }
@@ -33,6 +40,7 @@ export const saveAttendanceRecord = (newRecord) => {
     const recordWithMeta = {
       id: 'att-' + Date.now(),
       ...newRecord,
+      time: normalizeTimeString(newRecord.time),
       submissionTimestamp: new Date().toISOString()
     };
     const updated = [recordWithMeta, ...existing];
@@ -119,7 +127,7 @@ export const exportToExcel = (records, selectedDate = 'ALL') => {
     'TikTok Username': `@${r.tikTokName || ''}`,
     'Twitch Username': `@${r.twitchName || ''}`,
     'Date': r.date || '',
-    'Time': r.time || '',
+    'Time': normalizeTimeString(r.time || ''),
     'Status': r.status || '',
     'Reason for Absence': r.status === 'Absent' ? (r.reason || 'N/A') : 'N/A',
     'Submission Timestamp': r.submissionTimestamp || ''
@@ -174,7 +182,7 @@ export const exportToCSV = (records, selectedDate = 'ALL') => {
     `"${(r.tikTokName || '').replace(/"/g, '""')}"`,
     `"${(r.twitchName || '').replace(/"/g, '""')}"`,
     `"${r.date || ''}"`,
-    `"${r.time || ''}"`,
+    `"${normalizeTimeString(r.time || '')}"`,
     `"${r.status || ''}"`,
     `"${(r.reason || '').replace(/"/g, '""')}"`,
     `"${r.submissionTimestamp || ''}"`
@@ -202,7 +210,7 @@ export const copyTableToClipboard = (records) => {
     `@${r.tikTokName || ''}`,
     `@${r.twitchName || ''}`,
     r.date || '',
-    r.time || '',
+    normalizeTimeString(r.time || ''),
     r.status || '',
     r.reason || 'N/A',
     r.submissionTimestamp || ''
@@ -266,7 +274,7 @@ export const importRecordsFromFile = (file, activeCalendarDate = 'ALL') => {
               tikTokName: cleanTikTok || 'Mod_User',
               twitchName: cleanTwitch || 'Mod_User',
               date: recordDate,
-              time: rawTime || '12:00 PM',
+              time: normalizeTimeString(rawTime || '12:00:00 PM'),
               status: cleanStatus,
               reason: cleanStatus === 'Absent' ? (rawReason === 'N/A' ? '' : rawReason) : '',
               submissionTimestamp: new Date().toISOString()

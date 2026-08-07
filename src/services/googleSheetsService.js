@@ -86,6 +86,66 @@ export const normalizeDateString = (rawDate) => {
   return str;
 };
 
+export const normalizeTimeString = (rawTime) => {
+  if (!rawTime && rawTime !== 0) return '12:00:00 PM';
+  const str = String(rawTime).trim();
+  if (!str) return '12:00:00 PM';
+
+  // 1. If string is already clean 12-hour time like "5:05:13 PM" or "9:39:24 PM" or "8:15 AM"
+  const ampmMatch = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM|am|pm)$/i);
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1], 10);
+    const minutes = ampmMatch[2];
+    const seconds = ampmMatch[3];
+    const ampm = ampmMatch[4].toUpperCase();
+    if (hours >= 1 && hours <= 12) {
+      return seconds
+        ? `${hours}:${minutes}:${seconds} ${ampm}`
+        : `${hours}:${minutes} ${ampm}`;
+    }
+  }
+
+  // 2. Check if numeric Excel time decimal (e.g. 0.902361111)
+  if (!isNaN(str) && Number(str) >= 0 && Number(str) < 1) {
+    const num = Number(str);
+    const totalSeconds = Math.round(num * 86400);
+    let hours = Math.floor(totalSeconds / 3600) % 24;
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} ${ampm}`;
+  }
+
+  // 3. Try parsing as a Date object or Date string (e.g. "Sat Dec 30 1899 21:39:24 GMT+0800", ISO strings)
+  const parsedDate = new Date(str);
+  if (!isNaN(parsedDate.getTime())) {
+    let hours = parsedDate.getHours();
+    const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+    const seconds = String(parsedDate.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes}:${seconds} ${ampm}`;
+  }
+
+  // 4. Handle 24-hour time string format like "21:39:24" or "21:39"
+  const match24 = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (match24) {
+    let hours = parseInt(match24[1], 10);
+    const minutes = match24[2];
+    const seconds = match24[3];
+    if (!isNaN(hours) && hours >= 0 && hours <= 23) {
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      return seconds
+        ? `${hours}:${minutes}:${seconds} ${ampm}`
+        : `${hours}:${minutes} ${ampm}`;
+    }
+  }
+
+  return str;
+};
+
 export const getAppsScriptTemplate = () => {
   return `/**
  * Google Apps Script for Stream Mod Attendance Database Sync
@@ -126,9 +186,22 @@ function doGet(e) {
       : String(rawDate || '');
 
     var rawTime = row[4];
-    var formattedTime = (rawTime instanceof Date)
-      ? Utilities.formatDate(rawTime, tz, "h:mm a")
-      : String(rawTime || '');
+    var formattedTime = '';
+    if (rawTime instanceof Date) {
+      formattedTime = Utilities.formatDate(rawTime, tz, "h:mm:ss a");
+    } else {
+      var timeStr = String(rawTime || '').trim();
+      if (timeStr.indexOf('GMT') !== -1 || timeStr.indexOf('1899') !== -1 || timeStr.indexOf('1900') !== -1 || timeStr.length > 20) {
+        var d = new Date(timeStr);
+        if (!isNaN(d.getTime())) {
+          formattedTime = Utilities.formatDate(d, tz, "h:mm:ss a");
+        } else {
+          formattedTime = timeStr;
+        }
+      } else {
+        formattedTime = timeStr;
+      }
+    }
 
     var rawStatus = String(row[5] || '').trim();
     var isAbsent = rawStatus.toLowerCase().indexOf('absent') !== -1;
@@ -138,7 +211,7 @@ function doGet(e) {
       tikTokName: String(row[1] || '').replace(/^@/, '').trim(),
       twitchName: String(row[2] || '').replace(/^@/, '').trim(),
       date: formattedDate,
-      time: formattedTime || '12:00 PM',
+      time: formattedTime || '12:00:00 PM',
       status: isAbsent ? 'Absent' : 'Present',
       reason: isAbsent ? String(row[6] === 'N/A' ? '' : (row[6] || '')) : '',
       submissionTimestamp: String(row[7] || new Date().toISOString())
@@ -224,7 +297,8 @@ function doPost(e) {
         
         sheet.getRange(2, 1, rows.length, 8).setValues(rows);
       }
-      
+    }
+
     if (action === 'DELETE') {
       var targetId = contents.id;
       var data = sheet.getDataRange().getValues();
@@ -297,9 +371,14 @@ export const pushRecordsToSheet = async (records) => {
   }
 
   try {
+    const formattedRecords = records.map(r => ({
+      ...r,
+      time: normalizeTimeString(r.time)
+    }));
+
     const result = await sendToGoogleSheets(config.webAppUrl, {
       action: 'PUSH_ALL',
-      records: records
+      records: formattedRecords
     });
     
     const now = new Date().toISOString();
@@ -319,9 +398,14 @@ export const appendRecordToSheet = async (record) => {
   }
 
   try {
+    const formattedRecord = {
+      ...record,
+      time: normalizeTimeString(record.time)
+    };
+
     const result = await sendToGoogleSheets(config.webAppUrl, {
       action: 'APPEND',
-      record: record
+      record: formattedRecord
     });
     
     const now = new Date().toISOString();
@@ -360,7 +444,7 @@ export const pullRecordsFromSheet = async () => {
         tikTokName: (r.tikTokName || '').replace(/^@/, '').trim(),
         twitchName: (r.twitchName || '').replace(/^@/, '').trim(),
         date: normalizeDateString(r.date),
-        time: r.time || '12:00 PM',
+        time: normalizeTimeString(r.time || '12:00:00 PM'),
         status: isAbsent ? 'Absent' : 'Present',
         reason: isAbsent ? (r.reason === 'N/A' ? '' : (r.reason || '')) : '',
         submissionTimestamp: r.submissionTimestamp || new Date().toISOString()

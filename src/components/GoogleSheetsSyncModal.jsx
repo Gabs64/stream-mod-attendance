@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { 
   getSyncConfig, saveSyncConfig, getSyncLogs, getAppsScriptTemplate,
-  testConnection, pushRecordsToSheet, pullRecordsFromSheet 
+  testConnection, pushRecordsToSheet, pullRecordsFromSheet, normalizeTimeString 
 } from '../services/googleSheetsService';
 import ConfirmModal from './ConfirmModal';
 
@@ -137,15 +137,17 @@ export default function GoogleSheetsSyncModal({ isOpen, onClose, records, onReco
       // Add local records first
       safeRecords.forEach(rec => {
         if (!rec) return;
-        const key = rec.id || `${rec.date}_${rec.tikTokName}_${rec.time}`;
-        recordMap.set(key, rec);
+        const normTime = normalizeTimeString(rec.time);
+        const key = rec.id || `${rec.date}_${rec.tikTokName}_${normTime}`;
+        recordMap.set(key, { ...rec, time: normTime });
       });
 
       // Add or update with sheet records
       sheetRecords.forEach(rec => {
-        const key = rec.id || `${rec.date}_${rec.tikTokName}_${rec.time}`;
+        const normTime = normalizeTimeString(rec.time);
+        const key = rec.id || `${rec.date}_${rec.tikTokName}_${normTime}`;
         if (!recordMap.has(key)) {
-          recordMap.set(key, rec);
+          recordMap.set(key, { ...rec, time: normTime });
         }
       });
 
